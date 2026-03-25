@@ -2,7 +2,7 @@
 
 ![Status](https://img.shields.io/badge/status-inicial-blue)
 ![.NET](https://img.shields.io/badge/.NET-ASP.NET%20Core-blue)
-![Database](https://img.shields.io/badge/database-SQLite-lightgrey)
+![Database](https://img.shields.io/badge/database-SQL-lightgrey)
 ![Auth](https://img.shields.io/badge/auth-JWT-orange)
 
 ---
@@ -32,7 +32,7 @@ Desenvolver uma API que permita:
 - C#  
 - ASP.NET Core  
 - Entity Framework Core  
-- SQLite  
+- SQL 
 - JWT (JSON Web Token)  
 
 ---
