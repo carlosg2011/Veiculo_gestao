@@ -1,17 +1,18 @@
-using Microsoft.AspNetCore.Mvc;
 using Gestao_veiculos.Data;
 using Gestao_veiculos.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Gestao_veiculos.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class UsersController : ControllerBase
+    public class UsuariosController : ControllerBase
     {
 
         private readonly AppDbContext _context;
 
-        public UsersController(AppDbContext context)
+        public UsuariosController(AppDbContext context)
         {
             _context = context;
 
@@ -20,60 +21,60 @@ namespace Gestao_veiculos.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            var user = _context.User.ToList();
-            return Ok(user);
+            var usuario = _context.Usuarios.ToList();
+            return Ok(usuario);
         }
 
         [HttpPost]
-        public IActionResult Post(User user)
+        public IActionResult Post(Usuario usuario)
         {
-            _context.User.Add(user);
+            _context.Usuarios.Add(usuario);
             _context.SaveChanges();
 
-            return CreatedAtAction(nameof(Get), new { id = user.Id }, user);
+            return CreatedAtAction(nameof(Get), new { id_usuario = usuario.Id_usuario }, usuario);
 
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        public IActionResult GetById(int id_usuario)
         {
-            var user = _context.User.Find(id);
+            var usuario = _context.Usuarios.Find(id_usuario);
 
-            if (user == null)
+            if (usuario == null)
                 return NotFound();
 
-            return Ok(user);
+            return Ok(usuario);
         }
 
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        [HttpDelete("{id_usuario}")]
+        public IActionResult Delete(int id_usuario)
         {
-            var user = _context.User.Find(id);
-            if (user == null)
+            var usuario = _context.Usuarios.Find(id_usuario);
+            if (usuario == null)
             {
                 return NotFound();
             }
-            _context.User.Remove(user);
+            _context.Usuarios.Remove(usuario);
             _context.SaveChanges();
             return NoContent();
         }
 
         [HttpPut("{id}")]
-        public IActionResult Put(int id, User updatedUser)
+        public IActionResult Put(int id_usuario, Usuario updatedUsuario)
         {
-            if (id != updatedUser.Id)
+            if (id_usuario != updatedUsuario.Id_usuario)
             {
                 return BadRequest("O id da rota é diferente do id enviado no body.");
             }
-            var user = _context.User.Find(id);
+            var usuario = _context.Usuarios.Find(id_usuario);
 
-            if (user == null)
+            if (usuario == null)
             {
                 return NotFound("Usuario não encontrado");
             }
-            user.Nome = updatedUser.Nome;
-            user.Email = updatedUser.Email;
-            user.Senha = updatedUser.Senha;
+            usuario.Nome = updatedUsuario.Nome;
+            usuario.Email = updatedUsuario.Email;
+            usuario.Senha = updatedUsuario.Senha;
             _context.SaveChanges();
             return Ok("Dados atualizados");
         }
