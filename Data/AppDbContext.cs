@@ -15,7 +15,7 @@ namespace Gestao_veiculos.Data
         public DbSet<Proposta> Propostas { get; set; }
         public DbSet<Vistoria> Vistorias { get; set; }
         public DbSet<Termo> Termos { get; set; }
-        
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Usuario>(entity =>
@@ -93,6 +93,9 @@ namespace Gestao_veiculos.Data
                     .HasMaxLength(10)
                     .IsRequired();
 
+                entity.HasIndex(v => v.Placa)
+                    .IsUnique();
+
                 entity.Property(v => v.Marca)
                     .HasColumnName("marca")
                     .HasMaxLength(50)
@@ -116,10 +119,16 @@ namespace Gestao_veiculos.Data
                     .HasMaxLength(17)
                     .IsRequired();
 
+                entity.HasIndex(v => v.Chassi)
+                    .IsUnique();
+
                 entity.Property(v => v.Renavam)
                     .HasColumnName("renavam")
                     .HasMaxLength(11)
                     .IsRequired();
+
+                entity.HasIndex(v => v.Renavam)
+                    .IsUnique();
 
                 entity.Property(v => v.Cor)
                     .HasColumnName("cor")
@@ -132,7 +141,7 @@ namespace Gestao_veiculos.Data
                     .IsRequired();
             });
 
-             modelBuilder.Entity<Proposta>(entity =>
+            modelBuilder.Entity<Proposta>(entity =>
             {
                 entity.ToTable("proposta");
 
@@ -166,6 +175,21 @@ namespace Gestao_veiculos.Data
                 entity.Property(p => p.Id_proprietario)
                     .HasColumnName("id_proprietario")
                     .IsRequired();
+
+                entity.HasOne<Usuario>()
+                    .WithMany()
+                    .HasForeignKey(p => p.Id_usuario)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<Veiculo>()
+                    .WithMany()
+                    .HasForeignKey(p => p.Id_veiculo)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<Proprietario>()
+                    .WithMany()
+                    .HasForeignKey(p => p.Id_proprietario)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<Vistoria>(entity =>
@@ -177,17 +201,15 @@ namespace Gestao_veiculos.Data
                 entity.Property(v => v.Id_vistoria)
                     .HasColumnName("id_vistoria");
 
-                entity.Property(v => v.Data_solicitação)
+                entity.Property(v => v.Data_solicitacao)
                     .HasColumnName("data_solicitacao")
                     .IsRequired();
 
                 entity.Property(v => v.data_inicio)
-                    .HasColumnName("data_inicio")
-                    .HasMaxLength(20);
+                    .HasColumnName("data_inicio");
 
                 entity.Property(v => v.data_conclusao)
-                    .HasColumnName("data_conclusao")
-                    .HasMaxLength(20);
+                    .HasColumnName("data_conclusao");
 
                 entity.Property(v => v.status_vistoria)
                     .HasColumnName("status_vistoria")
@@ -201,6 +223,16 @@ namespace Gestao_veiculos.Data
                 entity.Property(v => v.Id_usuario)
                     .HasColumnName("id_usuario_responsavel")
                     .IsRequired();
+
+                entity.HasOne<Proposta>()
+                    .WithMany()
+                    .HasForeignKey(v => v.Id_proposta)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<Usuario>()
+                    .WithMany()
+                    .HasForeignKey(v => v.Id_usuario)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<Termo>(entity =>
@@ -227,12 +259,16 @@ namespace Gestao_veiculos.Data
                     .IsRequired();
 
                 entity.Property(t => t.data_assinatura)
-                    .HasColumnName("data_assinatura")
-                    .HasMaxLength(20);
+                    .HasColumnName("data_assinatura");
 
-                    entity.Property(v => v.Id_proposta)
+                entity.Property(t => t.Id_proposta)
                     .HasColumnName("id_proposta")
                     .IsRequired();
+
+                entity.HasOne<Proposta>()
+                    .WithMany()
+                    .HasForeignKey(t => t.Id_proposta)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             base.OnModelCreating(modelBuilder);

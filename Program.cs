@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Gestao_veiculos.Data;
+using Gestao_veiculos.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,8 @@ builder.Services.AddSwaggerGen();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' não encontrada.");
+
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 
 builder.Services.AddDbContext<AppDbContext>(
     options =>
