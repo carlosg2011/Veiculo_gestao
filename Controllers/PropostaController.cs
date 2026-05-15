@@ -1,5 +1,6 @@
 using Gestao_veiculos.Data;
 using Gestao_veiculos.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,6 +8,7 @@ namespace Gestao_veiculos.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class PropostaController : ControllerBase
     {
         private readonly AppDbContext _context;

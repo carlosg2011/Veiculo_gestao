@@ -1,11 +1,13 @@
 using Gestao_veiculos.Data;
 using Gestao_veiculos.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Gestao_veiculos.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class VistoriaController : ControllerBase
     {
         private readonly AppDbContext _context;

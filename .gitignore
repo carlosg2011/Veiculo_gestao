@@ -1,7 +1,6 @@
 # Build results
 bin/
 obj/
-
 # Visual Studio
 .vs/
 *.user
@@ -38,3 +37,7 @@ TestResults/
 # Resharper
 _ReSharper*/
 *.DotSettings.user
+
+# Arquivos de contexto e comandos do Claude
+.claude/
+CLAUDE.md

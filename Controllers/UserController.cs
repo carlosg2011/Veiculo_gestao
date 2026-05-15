@@ -1,11 +1,13 @@
 using Gestao_veiculos.DTOs;
 using Gestao_veiculos.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Gestao_veiculos.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class UsuariosController : ControllerBase
     {
         private readonly IUsuarioService _service;
