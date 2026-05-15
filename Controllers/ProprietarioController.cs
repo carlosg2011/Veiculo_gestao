@@ -1,8 +1,7 @@
-using Gestao_veiculos.Data;
-using Gestao_veiculos.Models;
+using Gestao_veiculos.DTOs;
+using Gestao_veiculos.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Gestao_veiculos.Controllers
 {
@@ -11,85 +10,67 @@ namespace Gestao_veiculos.Controllers
     [Authorize]
     public class ProprietarioController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IProprietarioService _service;
 
-        public ProprietarioController(AppDbContext context)
+        public ProprietarioController(IProprietarioService service)
         {
-            _context = context;
+            _service = service;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Proprietario>>> GetAll()
-        {
-            var proprietarios = await _context.Proprietarios.ToListAsync();
-            return Ok(proprietarios);
-        }
+        public IActionResult Get() => Ok(_service.ListarTodos());
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Proprietario>> GetById(int id)
+        public IActionResult GetById(int id)
         {
-            var proprietario = await _context.Proprietarios.FindAsync(id);
-
-            if (proprietario == null)
-                return NotFound("Proprietário não encontrado.");
-
-            return Ok(proprietario);
+            var proprietario = _service.BuscarPorId(id);
+            return proprietario is null ? NotFound() : Ok(proprietario);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Proprietario>> Create(Proprietario proprietario)
+        public IActionResult Post(CreateProprietarioDto dto)
         {
-            var cpfJaExiste = await _context.Proprietarios
-                .AnyAsync(p => p.Cpf == proprietario.Cpf);
-
-            if (cpfJaExiste)
-                return BadRequest("Já existe um proprietário cadastrado com esse CPF.");
-
-            _context.Proprietarios.Add(proprietario);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetById), new { id = proprietario.Id_proprietario }, proprietario);
+            try
+            {
+                var proprietario = _service.Criar(dto);
+                return CreatedAtAction(nameof(GetById), new { id = proprietario.Id_proprietario }, proprietario);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update(int id, Proprietario proprietario)
+        public IActionResult Put(int id, CreateProprietarioDto dto)
         {
-            if (id != proprietario.Id_proprietario)
-                return BadRequest("Id da rota diferente do Id do objeto.");
-
-            var proprietarioExistente = await _context.Proprietarios.FindAsync(id);
-
-            if (proprietarioExistente == null)
-                return NotFound("Proprietário não encontrado.");
-
-            var cpfJaExiste = await _context.Proprietarios
-                .AnyAsync(p => p.Cpf == proprietario.Cpf && p.Id_proprietario != id);
-
-            if (cpfJaExiste)
-                return BadRequest("Já existe outro proprietário cadastrado com esse CPF.");
-
-            proprietarioExistente.Nome = proprietario.Nome;
-            proprietarioExistente.Cpf = proprietario.Cpf;
-            proprietarioExistente.Telefone = proprietario.Telefone;
-            proprietarioExistente.Email = proprietario.Email;
-
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            try
+            {
+                var proprietario = _service.Atualizar(id, dto);
+                return Ok(proprietario);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(int id)
+        public IActionResult Delete(int id)
         {
-            var proprietario = await _context.Proprietarios.FindAsync(id);
-
-            if (proprietario == null)
-                return NotFound("Proprietário não encontrado.");
-
-            _context.Proprietarios.Remove(proprietario);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            try
+            {
+                _service.Deletar(id);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }

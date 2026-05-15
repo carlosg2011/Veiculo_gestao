@@ -1,8 +1,7 @@
-using Gestao_veiculos.Data;
-using Gestao_veiculos.Models;
+using Gestao_veiculos.DTOs;
+using Gestao_veiculos.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Gestao_veiculos.Controllers
 {
@@ -11,54 +10,63 @@ namespace Gestao_veiculos.Controllers
     [Authorize]
     public class TermosController : ControllerBase
     {
+        private readonly ITermoService _service;
 
-        private readonly AppDbContext _context;
-
-        public TermosController(AppDbContext context)
+        public TermosController(ITermoService service)
         {
-            _context = context;
-
+            _service = service;
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public IActionResult Get() => Ok(_service.ListarTodos());
+
+        [HttpGet("{id_termo}")]
+        public IActionResult GetById(int id_termo)
         {
-            var termo = _context.Termos.ToList();
-            return Ok(termo);
+            var termo = _service.BuscarPorId(id_termo);
+            return termo is null ? NotFound() : Ok(termo);
         }
 
         [HttpPost]
-        public IActionResult Post(Termo termo)
+        public IActionResult Post(CreateTermoDto dto)
         {
-            _context.Termos.Add(termo);
-            _context.SaveChanges();
-
-            return CreatedAtAction(nameof(Get), new { id_termo = termo.Id_termo }, termo);
-
+            try
+            {
+                var termo = _service.Criar(dto);
+                return CreatedAtAction(nameof(GetById), new { id_termo = termo.Id_termo }, termo);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
-        [HttpGet("{id}")]
-        public IActionResult GetById(int id_termo)
+        [HttpPut("{id_termo}")]
+        public IActionResult Put(int id_termo, CreateTermoDto dto)
         {
-            var termo = _context.Termos.Find(id_termo);
-
-            if (termo == null)
-                return NotFound();
-
-            return Ok(termo);
+            try
+            {
+                var termo = _service.Atualizar(id_termo, dto);
+                return Ok(termo);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpDelete("{id_termo}")]
         public IActionResult Delete(int id_termo)
         {
-            var termo = _context.Termos.Find(id_termo);
-            if (termo == null)
+            try
             {
-                return NotFound();
+                _service.Deletar(id_termo);
+                return NoContent();
             }
-            _context.Termos.Remove(termo);
-            _context.SaveChanges();
-            return NoContent();
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }

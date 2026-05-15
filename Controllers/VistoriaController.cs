@@ -1,5 +1,5 @@
-using Gestao_veiculos.Data;
-using Gestao_veiculos.Models;
+using Gestao_veiculos.DTOs;
+using Gestao_veiculos.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,52 +10,63 @@ namespace Gestao_veiculos.Controllers
     [Authorize]
     public class VistoriaController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IVistoriaService _service;
 
-        public VistoriaController(AppDbContext context)
+        public VistoriaController(IVistoriaService service)
         {
-            _context = context;
+            _service = service;
         }
 
         [HttpGet]
-        public IActionResult Get()
-        {
-            var vistorias = _context.Vistorias.ToList();
-            return Ok(vistorias);
-        }
+        public IActionResult Get() => Ok(_service.ListarTodos());
 
         [HttpGet("{id_vistoria}")]
         public IActionResult GetById(int id_vistoria)
         {
-            var vistoria = _context.Vistorias.Find(id_vistoria);
-
-            if (vistoria == null)
-                return NotFound();
-
-            return Ok(vistoria);
+            var vistoria = _service.BuscarPorId(id_vistoria);
+            return vistoria is null ? NotFound() : Ok(vistoria);
         }
 
         [HttpPost]
-        public IActionResult Post(Vistoria vistoria)
+        public IActionResult Post(CreateVistoriaDto dto)
         {
-            _context.Vistorias.Add(vistoria);
-            _context.SaveChanges();
+            try
+            {
+                var vistoria = _service.Criar(dto);
+                return CreatedAtAction(nameof(GetById), new { id_vistoria = vistoria.Id_vistoria }, vistoria);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
 
-            return CreatedAtAction(nameof(GetById), new { id_vistoria = vistoria.Id_vistoria }, vistoria);
+        [HttpPut("{id_vistoria}")]
+        public IActionResult Put(int id_vistoria, UpdateVistoriaDto dto)
+        {
+            try
+            {
+                var vistoria = _service.Atualizar(id_vistoria, dto);
+                return Ok(vistoria);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpDelete("{id_vistoria}")]
         public IActionResult Delete(int id_vistoria)
         {
-            var vistoria = _context.Vistorias.Find(id_vistoria);
-
-            if (vistoria == null)
-                return NotFound();
-
-            _context.Vistorias.Remove(vistoria);
-            _context.SaveChanges();
-
-            return NoContent();
+            try
+            {
+                _service.Deletar(id_vistoria);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }

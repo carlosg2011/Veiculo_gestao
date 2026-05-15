@@ -1,5 +1,5 @@
-using Gestao_veiculos.Data;
-using Gestao_veiculos.Models;
+using Gestao_veiculos.DTOs;
+using Gestao_veiculos.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,52 +10,67 @@ namespace Gestao_veiculos.Controllers
     [Authorize]
     public class VeiculosController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IVeiculoService _service;
 
-        public VeiculosController(AppDbContext context)
+        public VeiculosController(IVeiculoService service)
         {
-            _context = context;
+            _service = service;
         }
 
         [HttpGet]
-        public IActionResult Get()
-        {
-            var veiculos = _context.Veiculos.ToList();
-            return Ok(veiculos);
-        }
+        public IActionResult Get() => Ok(_service.ListarTodos());
 
         [HttpGet("{id_veiculo}")]
         public IActionResult GetById(int id_veiculo)
         {
-            var veiculo = _context.Veiculos.Find(id_veiculo);
-
-            if (veiculo == null)
-                return NotFound();
-
-            return Ok(veiculo);
+            var veiculo = _service.BuscarPorId(id_veiculo);
+            return veiculo is null ? NotFound() : Ok(veiculo);
         }
 
         [HttpPost]
-        public IActionResult Post(Veiculo veiculo)
+        public IActionResult Post(CreateVeiculoDto dto)
         {
-            _context.Veiculos.Add(veiculo);
-            _context.SaveChanges();
+            try
+            {
+                var veiculo = _service.Criar(dto);
+                return CreatedAtAction(nameof(GetById), new { id_veiculo = veiculo.Id_veiculo }, veiculo);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
+        }
 
-            return CreatedAtAction(nameof(GetById), new { id_veiculo = veiculo.Id_veiculo }, veiculo);
+        [HttpPut("{id_veiculo}")]
+        public IActionResult Put(int id_veiculo, CreateVeiculoDto dto)
+        {
+            try
+            {
+                var veiculo = _service.Atualizar(id_veiculo, dto);
+                return Ok(veiculo);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
         }
 
         [HttpDelete("{id_veiculo}")]
         public IActionResult Delete(int id_veiculo)
         {
-            var veiculo = _context.Veiculos.Find(id_veiculo);
-
-            if (veiculo == null)
-                return NotFound();
-
-            _context.Veiculos.Remove(veiculo);
-            _context.SaveChanges();
-
-            return NoContent();
+            try
+            {
+                _service.Deletar(id_veiculo);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }

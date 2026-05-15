@@ -1,8 +1,7 @@
-using Gestao_veiculos.Data;
-using Gestao_veiculos.Models;
+using Gestao_veiculos.DTOs;
+using Gestao_veiculos.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Gestao_veiculos.Controllers
 {
@@ -11,125 +10,71 @@ namespace Gestao_veiculos.Controllers
     [Authorize]
     public class PropostaController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IPropostaService _service;
 
-        public PropostaController(AppDbContext context)
+        public PropostaController(IPropostaService service)
         {
-            _context = context;
+            _service = service;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Proposta>>> GetAll()
-        {
-            var propostas = await _context.Propostas.ToListAsync();
-            return Ok(propostas);
-        }
+        public IActionResult Get() => Ok(_service.ListarTodos());
 
         [HttpGet("{id_proposta:int}")]
-        public async Task<ActionResult<Proposta>> GetById(int id_proposta)
+        public IActionResult GetById(int id_proposta)
         {
-            var proposta = await _context.Propostas.FindAsync(id_proposta);
-
-            if (proposta == null)
-                return NotFound("Proposta não encontrada.");
-
-            return Ok(proposta);
+            var proposta = _service.BuscarPorId(id_proposta);
+            return proposta is null ? NotFound() : Ok(proposta);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Proposta>> Create(Proposta proposta)
+        public IActionResult Post(CreatePropostaDto dto)
         {
-            var usuarioExiste = await _context.Usuarios
-                .AnyAsync(u => u.Id_usuario == proposta.Id_usuario);
-
-            if (!usuarioExiste)
-                return BadRequest("Usuário informado não existe.");
-
-            var proprietarioExiste = await _context.Proprietarios
-                .AnyAsync(p => p.Id_proprietario == proposta.Id_proprietario);
-
-            if (!proprietarioExiste)
-                return BadRequest("Proprietário informado não existe.");
-
-            var veiculoExiste = await _context.Veiculos
-                .AnyAsync(v => v.Id_veiculo == proposta.Id_veiculo);
-
-            if (!veiculoExiste)
-                return BadRequest("Veículo informado não existe.");
-
-            var codigoJaExiste = await _context.Propostas
-                .AnyAsync(p => p.sessao_proposta == proposta.sessao_proposta);
-
-            if (codigoJaExiste)
-                return BadRequest("Já existe uma proposta cadastrada com esse código.");
-
-            proposta.Data_Criacao = DateTime.Now;
-
-            _context.Propostas.Add(proposta);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetById), new { id_proposta = proposta.Id_proposta }, proposta);
+            try
+            {
+                var proposta = _service.Criar(dto);
+                return CreatedAtAction(nameof(GetById), new { id_proposta = proposta.Id_proposta }, proposta);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
         }
 
         [HttpPut("{id_proposta:int}")]
-        public async Task<ActionResult> Update(int id_proposta, Proposta proposta)
+        public IActionResult Put(int id_proposta, CreatePropostaDto dto)
         {
-            if (id_proposta != proposta.Id_proposta)
-                return BadRequest("O id da rota é diferente do id da proposta.");
-
-            var propostaExistente = await _context.Propostas.FindAsync(id_proposta);
-
-            if (propostaExistente == null)
-                return NotFound("Proposta não encontrada.");
-
-            var usuarioExiste = await _context.Usuarios
-                .AnyAsync(u => u.Id_usuario == proposta.Id_usuario);
-
-            if (!usuarioExiste)
-                return BadRequest("Usuário informado não existe.");
-
-            var proprietarioExiste = await _context.Proprietarios
-                .AnyAsync(p => p.Id_proprietario == proposta.Id_proprietario);
-
-            if (!proprietarioExiste)
-                return BadRequest("Proprietário informado não existe.");
-
-            var veiculoExiste = await _context.Veiculos
-                .AnyAsync(v => v.Id_veiculo == proposta.Id_veiculo);
-
-            if (!veiculoExiste)
-                return BadRequest("Veículo informado não existe.");
-
-            var codigoJaExiste = await _context.Propostas
-                .AnyAsync(p => p.sessao_proposta == proposta.sessao_proposta
-                            && p.Id_proposta != id_proposta);
-
-            if (codigoJaExiste)
-                return BadRequest("Já existe outra proposta cadastrada com esse código.");
-
-            propostaExistente.sessao_proposta = proposta.sessao_proposta;
-            propostaExistente.Status = proposta.Status;
-            propostaExistente.Id_usuario = proposta.Id_usuario;
-            propostaExistente.Id_proprietario = proposta.Id_proprietario;
-            propostaExistente.Id_veiculo = proposta.Id_veiculo;
-
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            try
+            {
+                var proposta = _service.Atualizar(id_proposta, dto);
+                return Ok(proposta);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
         }
 
         [HttpDelete("{id_proposta:int}")]
-        public async Task<ActionResult> Delete(int id_proposta)
+        public IActionResult Delete(int id_proposta)
         {
-            var proposta = await _context.Propostas.FindAsync(id_proposta);
-
-            if (proposta == null)
-                return NotFound("Proposta não encontrada.");
-
-            _context.Propostas.Remove(proposta);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            try
+            {
+                _service.Deletar(id_proposta);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }
