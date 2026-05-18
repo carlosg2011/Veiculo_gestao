@@ -44,6 +44,12 @@ namespace Gestao_veiculos.Data
                     .HasColumnName("senha")
                     .HasMaxLength(255)
                     .IsRequired();
+
+                entity.Property(u => u.Role)
+                    .HasColumnName("role")
+                    .HasMaxLength(20)
+                    .IsRequired()
+                    .HasDefaultValue("User");
             });
 
             modelBuilder.Entity<Proprietario>(entity =>

@@ -35,7 +35,8 @@ namespace Gestao_veiculos.Services
             {
                 Nome  = dto.Nome,
                 Email = dto.Email,
-                Senha = BCrypt.Net.BCrypt.HashPassword(dto.Senha)
+                Senha = BCrypt.Net.BCrypt.HashPassword(dto.Senha),
+                Role  = dto.Role
             };
 
             _context.Usuarios.Add(usuario);
@@ -55,6 +56,7 @@ namespace Gestao_veiculos.Services
             usuario.Nome  = dto.Nome;
             usuario.Email = dto.Email;
             usuario.Senha = BCrypt.Net.BCrypt.HashPassword(dto.Senha);
+            usuario.Role  = dto.Role;
 
             _context.SaveChanges();
 
@@ -74,7 +76,8 @@ namespace Gestao_veiculos.Services
         {
             Id_usuario = u.Id_usuario,
             Nome       = u.Nome,
-            Email      = u.Email
+            Email      = u.Email,
+            Role       = u.Role
         };
     }
 }

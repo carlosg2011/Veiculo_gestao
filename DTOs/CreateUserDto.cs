@@ -17,5 +17,9 @@ namespace Gestao_veiculos.DTOs
         [MinLength(8, ErrorMessage = "Senha deve ter no mínimo 8 caracteres.")]
         [MaxLength(255, ErrorMessage = "Senha pode ter no máximo 255 caracteres.")]
         public string Senha { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Role é obrigatório.")]
+        [RegularExpression("^(Admin|User)$", ErrorMessage = "Role deve ser 'Admin' ou 'User'.")]
+        public string Role { get; set; } = "User";
     }
 }

@@ -25,7 +25,8 @@ namespace Gestao_veiculos.Services
                 new Claim(JwtRegisteredClaimNames.Sub, usuario.Id_usuario.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, usuario.Email),
                 new Claim(JwtRegisteredClaimNames.Name, usuario.Nome),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Role, usuario.Role)
             };
 
             var expiracao = DateTime.UtcNow.AddHours(

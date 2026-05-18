@@ -35,6 +35,7 @@ namespace Gestao_veiculos.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public IActionResult Post(CreateUserDto dto)
         {
             try
@@ -49,6 +50,7 @@ namespace Gestao_veiculos.Controllers
         }
 
         [HttpPut("{id_usuario}")]
+        [Authorize(Roles = "Admin")]
         public IActionResult Put(int id_usuario, CreateUserDto dto)
         {
             try
@@ -67,6 +69,7 @@ namespace Gestao_veiculos.Controllers
         }
 
         [HttpDelete("{id_usuario}")]
+        [Authorize(Roles = "Admin")]
         public IActionResult Delete(int id_usuario)
         {
             try
