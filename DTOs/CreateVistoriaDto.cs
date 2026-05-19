@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Gestao_veiculos.Enums;
 
 namespace Gestao_veiculos.DTOs
 {
@@ -8,8 +9,7 @@ namespace Gestao_veiculos.DTOs
         public DateTime Data_solicitacao { get; set; }
 
         [Required(ErrorMessage = "Status é obrigatório.")]
-        [MaxLength(30, ErrorMessage = "Status pode ter no máximo 30 caracteres.")]
-        public string Status_vistoria { get; set; } = string.Empty;
+        public StatusVistoria? Status_vistoria { get; set; }
 
         [Required(ErrorMessage = "Id da proposta é obrigatório.")]
         public int Id_proposta { get; set; }

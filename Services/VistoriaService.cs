@@ -33,7 +33,7 @@ namespace Gestao_veiculos.Services
             var vistoria = new Vistoria
             {
                 Data_solicitacao = dto.Data_solicitacao,
-                status_vistoria  = dto.Status_vistoria,
+                status_vistoria  = dto.Status_vistoria!.Value,
                 Id_proposta      = dto.Id_proposta,
                 Id_usuario       = dto.Id_usuario
             };
@@ -49,7 +49,7 @@ namespace Gestao_veiculos.Services
             var vistoria = await _context.Vistorias.FindAsync(id)
                 ?? throw new KeyNotFoundException("Vistoria não encontrada.");
 
-            vistoria.status_vistoria = dto.Status_vistoria;
+            vistoria.status_vistoria = dto.Status_vistoria!.Value;
             vistoria.data_inicio     = dto.Data_inicio;
             vistoria.data_conclusao  = dto.Data_conclusao;
 

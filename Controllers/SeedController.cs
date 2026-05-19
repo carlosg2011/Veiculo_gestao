@@ -1,4 +1,5 @@
 using Gestao_veiculos.Data;
+using Gestao_veiculos.Enums;
 using Gestao_veiculos.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +25,7 @@ namespace Gestao_veiculos.Controllers
             if (!_env.IsDevelopment())
                 return NotFound();
 
-            if (await _context.Usuarios.AnyAsync(u => u.Role == "Admin"))
+            if (await _context.Usuarios.AnyAsync(u => u.Role == Roles.Admin))
                 return Problem(detail: "Já existe um usuário Admin cadastrado.", statusCode: StatusCodes.Status409Conflict);
 
             var admin = new Usuario
@@ -32,7 +33,7 @@ namespace Gestao_veiculos.Controllers
                 Nome  = "Administrador",
                 Email = "admin@vehicleguard.com",
                 Senha = BCrypt.Net.BCrypt.HashPassword("Admin@1234"),
-                Role  = "Admin"
+                Role  = Roles.Admin
             };
 
             _context.Usuarios.Add(admin);

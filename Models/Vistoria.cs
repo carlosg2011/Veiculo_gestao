@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Gestao_veiculos.Enums;
 
 namespace Gestao_veiculos.Models
 {
@@ -8,9 +8,8 @@ namespace Gestao_veiculos.Models
         public DateTime Data_solicitacao { get; set; }
         public DateTime? data_inicio { get; set; }
         public DateTime? data_conclusao { get; set; }
-        public string status_vistoria { get; set; } = string.Empty;
+        public StatusVistoria status_vistoria { get; set; }
         public int Id_proposta { get; set; }
         public int Id_usuario { get; set; }
-
     }
 }

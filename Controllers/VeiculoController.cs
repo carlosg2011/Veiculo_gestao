@@ -1,4 +1,5 @@
 using Gestao_veiculos.DTOs;
+using Gestao_veiculos.Enums;
 using Gestao_veiculos.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -44,6 +45,7 @@ namespace Gestao_veiculos.Controllers
         }
 
         [HttpPut("{id_veiculo}")]
+        [Authorize(Roles = Roles.Admin)]
         public async Task<IActionResult> Put(int id_veiculo, CreateVeiculoDto dto)
         {
             try

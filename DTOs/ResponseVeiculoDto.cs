@@ -1,3 +1,5 @@
+using Gestao_veiculos.Enums;
+
 namespace Gestao_veiculos.DTOs
 {
     public class ResponseVeiculoDto
@@ -11,6 +13,6 @@ namespace Gestao_veiculos.DTOs
         public string Chassi { get; set; } = string.Empty;
         public string Renavam { get; set; } = string.Empty;
         public string Cor { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty;
+        public StatusVeiculo Status { get; set; }
     }
 }

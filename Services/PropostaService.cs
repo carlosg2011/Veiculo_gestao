@@ -1,5 +1,6 @@
 using Gestao_veiculos.Data;
 using Gestao_veiculos.DTOs;
+using Gestao_veiculos.Enums;
 using Gestao_veiculos.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,13 @@ namespace Gestao_veiculos.Services
     public class PropostaService : IPropostaService
     {
         private readonly AppDbContext _context;
+
+        private static readonly StatusProposta[] StatusAtivos =
+        [
+            StatusProposta.Pendente,
+            StatusProposta.EmAnalise,
+            StatusProposta.Aprovada
+        ];
 
         public PropostaService(AppDbContext context)
         {
@@ -29,15 +37,24 @@ namespace Gestao_veiculos.Services
                 throw new KeyNotFoundException("Usuário informado não existe.");
             if (!await _context.Proprietarios.AnyAsync(p => p.Id_proprietario == dto.Id_proprietario))
                 throw new KeyNotFoundException("Proprietário informado não existe.");
-            if (!await _context.Veiculos.AnyAsync(v => v.Id_veiculo == dto.Id_veiculo))
-                throw new KeyNotFoundException("Veículo informado não existe.");
+
+            var veiculo = await _context.Veiculos.FindAsync(dto.Id_veiculo)
+                ?? throw new KeyNotFoundException("Veículo informado não existe.");
+
+            if (veiculo.Status == StatusVeiculo.Bloqueado)
+                throw new InvalidOperationException("Veículo indisponível por inviabilidade técnica.");
+
+            if (await _context.Propostas.AnyAsync(p =>
+                    p.Id_veiculo == dto.Id_veiculo && StatusAtivos.Contains(p.Status)))
+                throw new InvalidOperationException($"Contrato emitido para a placa {veiculo.Placa}.");
+
             if (await _context.Propostas.AnyAsync(p => p.sessao_proposta == dto.Sessao_proposta))
                 throw new InvalidOperationException("Já existe uma proposta com esse código.");
 
             var proposta = new Proposta
             {
                 sessao_proposta = dto.Sessao_proposta,
-                Status          = dto.Status,
+                Status          = dto.Status!.Value,
                 Data_Criacao    = DateTime.UtcNow,
                 Id_usuario      = dto.Id_usuario,
                 Id_veiculo      = dto.Id_veiculo,
@@ -59,13 +76,22 @@ namespace Gestao_veiculos.Services
                 throw new KeyNotFoundException("Usuário informado não existe.");
             if (!await _context.Proprietarios.AnyAsync(p => p.Id_proprietario == dto.Id_proprietario))
                 throw new KeyNotFoundException("Proprietário informado não existe.");
-            if (!await _context.Veiculos.AnyAsync(v => v.Id_veiculo == dto.Id_veiculo))
-                throw new KeyNotFoundException("Veículo informado não existe.");
+
+            var veiculo = await _context.Veiculos.FindAsync(dto.Id_veiculo)
+                ?? throw new KeyNotFoundException("Veículo informado não existe.");
+
+            if (veiculo.Status == StatusVeiculo.Bloqueado)
+                throw new InvalidOperationException("Veículo indisponível por inviabilidade técnica.");
+
+            if (await _context.Propostas.AnyAsync(p =>
+                    p.Id_veiculo == dto.Id_veiculo && p.Id_proposta != id && StatusAtivos.Contains(p.Status)))
+                throw new InvalidOperationException($"Contrato emitido para a placa {veiculo.Placa}.");
+
             if (await _context.Propostas.AnyAsync(p => p.sessao_proposta == dto.Sessao_proposta && p.Id_proposta != id))
                 throw new InvalidOperationException("Já existe outra proposta com esse código.");
 
             proposta.sessao_proposta = dto.Sessao_proposta;
-            proposta.Status          = dto.Status;
+            proposta.Status          = dto.Status!.Value;
             proposta.Id_usuario      = dto.Id_usuario;
             proposta.Id_veiculo      = dto.Id_veiculo;
             proposta.Id_proprietario = dto.Id_proprietario;

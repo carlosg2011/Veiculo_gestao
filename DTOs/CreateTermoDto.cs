@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Gestao_veiculos.Enums;
 
 namespace Gestao_veiculos.DTOs
 {
@@ -9,8 +10,7 @@ namespace Gestao_veiculos.DTOs
         public string Numero_termo { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Status é obrigatório.")]
-        [MaxLength(30, ErrorMessage = "Status pode ter no máximo 30 caracteres.")]
-        public string Status_termo { get; set; } = string.Empty;
+        public StatusTermo? Status_termo { get; set; }
 
         [Required(ErrorMessage = "Data de envio é obrigatória.")]
         public DateTime Data_envio { get; set; }

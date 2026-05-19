@@ -1,4 +1,5 @@
 using Gestao_veiculos.DTOs;
+using Gestao_veiculos.Enums;
 using Gestao_veiculos.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +31,7 @@ namespace Gestao_veiculos.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = Roles.Admin)]
         public async Task<IActionResult> Post(CreateUserDto dto)
         {
             try
@@ -45,7 +46,7 @@ namespace Gestao_veiculos.Controllers
         }
 
         [HttpPut("{id_usuario}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = Roles.Admin)]
         public async Task<IActionResult> Put(int id_usuario, UpdateUserDto dto)
         {
             try
@@ -64,7 +65,7 @@ namespace Gestao_veiculos.Controllers
         }
 
         [HttpDelete("{id_usuario}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = Roles.Admin)]
         public async Task<IActionResult> Delete(int id_usuario)
         {
             try

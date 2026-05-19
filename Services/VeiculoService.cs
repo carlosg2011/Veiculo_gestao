@@ -42,7 +42,7 @@ namespace Gestao_veiculos.Services
                 Chassi  = dto.Chassi,
                 Renavam = dto.Renavam,
                 Cor     = dto.Cor,
-                Status  = dto.Status
+                Status  = dto.Status!.Value
             };
 
             _context.Veiculos.Add(veiculo);
@@ -71,7 +71,7 @@ namespace Gestao_veiculos.Services
             veiculo.Chassi  = dto.Chassi;
             veiculo.Renavam = dto.Renavam;
             veiculo.Cor     = dto.Cor;
-            veiculo.Status  = dto.Status;
+            veiculo.Status  = dto.Status!.Value;
 
             await _context.SaveChangesAsync();
 

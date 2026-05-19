@@ -1,3 +1,4 @@
+using Gestao_veiculos.Enums;
 using Gestao_veiculos.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -144,7 +145,8 @@ namespace Gestao_veiculos.Data
                 entity.Property(v => v.Status)
                     .HasColumnName("status_veiculo")
                     .HasMaxLength(20)
-                    .IsRequired();
+                    .IsRequired()
+                    .HasConversion<string>();
             });
 
             modelBuilder.Entity<Proposta>(entity =>
@@ -168,7 +170,8 @@ namespace Gestao_veiculos.Data
                 entity.Property(p => p.Status)
                     .HasColumnName("status_proposta")
                     .HasMaxLength(30)
-                    .IsRequired();
+                    .IsRequired()
+                    .HasConversion<string>();
 
                 entity.Property(p => p.Id_usuario)
                     .HasColumnName("id_usuario")
@@ -220,7 +223,8 @@ namespace Gestao_veiculos.Data
                 entity.Property(v => v.status_vistoria)
                     .HasColumnName("status_vistoria")
                     .HasMaxLength(30)
-                    .IsRequired();
+                    .IsRequired()
+                    .HasConversion<string>();
 
                 entity.Property(v => v.Id_proposta)
                     .HasColumnName("id_proposta")
@@ -258,7 +262,8 @@ namespace Gestao_veiculos.Data
                 entity.Property(t => t.status_termo)
                     .HasColumnName("status_termo")
                     .HasMaxLength(30)
-                    .IsRequired();
+                    .IsRequired()
+                    .HasConversion<string>();
 
                 entity.Property(t => t.data_envio)
                     .HasColumnName("data_envio")
