@@ -1,5 +1,4 @@
 using Gestao_veiculos.DTOs;
-using Gestao_veiculos.Enums;
 using Gestao_veiculos.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,11 +8,11 @@ namespace Gestao_veiculos.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class UsuariosController : ControllerBase
+    public class PropostaController : ControllerBase
     {
-        private readonly IUsuarioService _service;
+        private readonly IPropostaService _service;
 
-        public UsuariosController(IUsuarioService service)
+        public PropostaController(IPropostaService service)
         {
             _service = service;
         }
@@ -22,38 +21,22 @@ namespace Gestao_veiculos.Controllers
         public async Task<IActionResult> Get([FromQuery] PaginationParams pagination) =>
             Ok(await _service.ListarTodos(pagination));
 
-        [HttpGet("{id_usuario}")]
-        public async Task<IActionResult> GetById(int id_usuario)
+        [HttpGet("{id_proposta:int}")]
+        public async Task<IActionResult> GetById(int id_proposta)
         {
-            var usuario = await _service.BuscarPorId(id_usuario);
-            return usuario is null
+            var proposta = await _service.BuscarPorId(id_proposta);
+            return proposta is null
                 ? Problem(statusCode: StatusCodes.Status404NotFound)
-                : Ok(usuario);
+                : Ok(proposta);
         }
 
         [HttpPost]
-        [Authorize(Roles = Roles.Admin)]
-        public async Task<IActionResult> Post(CreateUserDto dto)
+        public async Task<IActionResult> Post(CreatePropostaDto dto)
         {
             try
             {
-                var usuario = await _service.Criar(dto);
-                return CreatedAtAction(nameof(GetById), new { id_usuario = usuario.Id_usuario }, usuario);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Problem(detail: ex.Message, statusCode: StatusCodes.Status409Conflict);
-            }
-        }
-
-        [HttpPut("{id_usuario}")]
-        [Authorize(Roles = Roles.Admin)]
-        public async Task<IActionResult> Put(int id_usuario, UpdateUserDto dto)
-        {
-            try
-            {
-                var usuario = await _service.Atualizar(id_usuario, dto);
-                return Ok(usuario);
+                var proposta = await _service.Criar(dto);
+                return CreatedAtAction(nameof(GetById), new { id_proposta = proposta.Id_proposta }, proposta);
             }
             catch (KeyNotFoundException ex)
             {
@@ -65,13 +48,30 @@ namespace Gestao_veiculos.Controllers
             }
         }
 
-        [HttpDelete("{id_usuario}")]
-        [Authorize(Roles = Roles.Admin)]
-        public async Task<IActionResult> Delete(int id_usuario)
+        [HttpPut("{id_proposta:int}")]
+        public async Task<IActionResult> Put(int id_proposta, CreatePropostaDto dto)
         {
             try
             {
-                await _service.Deletar(id_usuario);
+                var proposta = await _service.Atualizar(id_proposta, dto);
+                return Ok(proposta);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Problem(detail: ex.Message, statusCode: StatusCodes.Status404NotFound);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Problem(detail: ex.Message, statusCode: StatusCodes.Status409Conflict);
+            }
+        }
+
+        [HttpDelete("{id_proposta:int}")]
+        public async Task<IActionResult> Delete(int id_proposta)
+        {
+            try
+            {
+                await _service.Deletar(id_proposta);
                 return NoContent();
             }
             catch (KeyNotFoundException ex)

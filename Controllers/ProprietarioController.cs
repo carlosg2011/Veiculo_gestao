@@ -1,5 +1,4 @@
 using Gestao_veiculos.DTOs;
-using Gestao_veiculos.Enums;
 using Gestao_veiculos.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,11 +8,11 @@ namespace Gestao_veiculos.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class UsuariosController : ControllerBase
+    public class ProprietarioController : ControllerBase
     {
-        private readonly IUsuarioService _service;
+        private readonly IProprietarioService _service;
 
-        public UsuariosController(IUsuarioService service)
+        public ProprietarioController(IProprietarioService service)
         {
             _service = service;
         }
@@ -22,23 +21,22 @@ namespace Gestao_veiculos.Controllers
         public async Task<IActionResult> Get([FromQuery] PaginationParams pagination) =>
             Ok(await _service.ListarTodos(pagination));
 
-        [HttpGet("{id_usuario}")]
-        public async Task<IActionResult> GetById(int id_usuario)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
         {
-            var usuario = await _service.BuscarPorId(id_usuario);
-            return usuario is null
+            var proprietario = await _service.BuscarPorId(id);
+            return proprietario is null
                 ? Problem(statusCode: StatusCodes.Status404NotFound)
-                : Ok(usuario);
+                : Ok(proprietario);
         }
 
         [HttpPost]
-        [Authorize(Roles = Roles.Admin)]
-        public async Task<IActionResult> Post(CreateUserDto dto)
+        public async Task<IActionResult> Post(CreateProprietarioDto dto)
         {
             try
             {
-                var usuario = await _service.Criar(dto);
-                return CreatedAtAction(nameof(GetById), new { id_usuario = usuario.Id_usuario }, usuario);
+                var proprietario = await _service.Criar(dto);
+                return CreatedAtAction(nameof(GetById), new { id = proprietario.Id_proprietario }, proprietario);
             }
             catch (InvalidOperationException ex)
             {
@@ -46,14 +44,13 @@ namespace Gestao_veiculos.Controllers
             }
         }
 
-        [HttpPut("{id_usuario}")]
-        [Authorize(Roles = Roles.Admin)]
-        public async Task<IActionResult> Put(int id_usuario, UpdateUserDto dto)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put(int id, CreateProprietarioDto dto)
         {
             try
             {
-                var usuario = await _service.Atualizar(id_usuario, dto);
-                return Ok(usuario);
+                var proprietario = await _service.Atualizar(id, dto);
+                return Ok(proprietario);
             }
             catch (KeyNotFoundException ex)
             {
@@ -65,13 +62,12 @@ namespace Gestao_veiculos.Controllers
             }
         }
 
-        [HttpDelete("{id_usuario}")]
-        [Authorize(Roles = Roles.Admin)]
-        public async Task<IActionResult> Delete(int id_usuario)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
         {
             try
             {
-                await _service.Deletar(id_usuario);
+                await _service.Deletar(id);
                 return NoContent();
             }
             catch (KeyNotFoundException ex)

@@ -1,6 +1,0 @@
-@Veiculo_gestao_HostAddress = http://localhost:5128
-
-GET {{Veiculo_gestao_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

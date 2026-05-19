@@ -9,11 +9,11 @@ namespace Gestao_veiculos.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class UsuariosController : ControllerBase
+    public class VeiculosController : ControllerBase
     {
-        private readonly IUsuarioService _service;
+        private readonly IVeiculoService _service;
 
-        public UsuariosController(IUsuarioService service)
+        public VeiculosController(IVeiculoService service)
         {
             _service = service;
         }
@@ -22,23 +22,22 @@ namespace Gestao_veiculos.Controllers
         public async Task<IActionResult> Get([FromQuery] PaginationParams pagination) =>
             Ok(await _service.ListarTodos(pagination));
 
-        [HttpGet("{id_usuario}")]
-        public async Task<IActionResult> GetById(int id_usuario)
+        [HttpGet("{id_veiculo}")]
+        public async Task<IActionResult> GetById(int id_veiculo)
         {
-            var usuario = await _service.BuscarPorId(id_usuario);
-            return usuario is null
+            var veiculo = await _service.BuscarPorId(id_veiculo);
+            return veiculo is null
                 ? Problem(statusCode: StatusCodes.Status404NotFound)
-                : Ok(usuario);
+                : Ok(veiculo);
         }
 
         [HttpPost]
-        [Authorize(Roles = Roles.Admin)]
-        public async Task<IActionResult> Post(CreateUserDto dto)
+        public async Task<IActionResult> Post(CreateVeiculoDto dto)
         {
             try
             {
-                var usuario = await _service.Criar(dto);
-                return CreatedAtAction(nameof(GetById), new { id_usuario = usuario.Id_usuario }, usuario);
+                var veiculo = await _service.Criar(dto);
+                return CreatedAtAction(nameof(GetById), new { id_veiculo = veiculo.Id_veiculo }, veiculo);
             }
             catch (InvalidOperationException ex)
             {
@@ -46,14 +45,14 @@ namespace Gestao_veiculos.Controllers
             }
         }
 
-        [HttpPut("{id_usuario}")]
+        [HttpPut("{id_veiculo}")]
         [Authorize(Roles = Roles.Admin)]
-        public async Task<IActionResult> Put(int id_usuario, UpdateUserDto dto)
+        public async Task<IActionResult> Put(int id_veiculo, CreateVeiculoDto dto)
         {
             try
             {
-                var usuario = await _service.Atualizar(id_usuario, dto);
-                return Ok(usuario);
+                var veiculo = await _service.Atualizar(id_veiculo, dto);
+                return Ok(veiculo);
             }
             catch (KeyNotFoundException ex)
             {
@@ -65,13 +64,12 @@ namespace Gestao_veiculos.Controllers
             }
         }
 
-        [HttpDelete("{id_usuario}")]
-        [Authorize(Roles = Roles.Admin)]
-        public async Task<IActionResult> Delete(int id_usuario)
+        [HttpDelete("{id_veiculo}")]
+        public async Task<IActionResult> Delete(int id_veiculo)
         {
             try
             {
-                await _service.Deletar(id_usuario);
+                await _service.Deletar(id_veiculo);
                 return NoContent();
             }
             catch (KeyNotFoundException ex)

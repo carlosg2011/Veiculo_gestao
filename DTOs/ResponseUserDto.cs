@@ -1,11 +1,10 @@
-namespace Gestao_veiculos.Models
+namespace Gestao_veiculos.DTOs
 {
-    public class Usuario
+    public class ResponseUserDto
     {
         public int Id_usuario { get; set; }
         public string Nome { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-        public string Senha { get; set; } = string.Empty;
-        public string Role { get; set; } = "User";
+        public string Role { get; set; } = string.Empty;
     }
 }
