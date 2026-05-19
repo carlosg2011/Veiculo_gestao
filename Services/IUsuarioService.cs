@@ -4,7 +4,7 @@ namespace Gestao_veiculos.Services
 {
     public interface IUsuarioService
     {
-        Task<IEnumerable<ResponseUserDto>> ListarTodos();
+        Task<PagedResultDto<ResponseUserDto>> ListarTodos(PaginationParams pagination);
         Task<ResponseUserDto?> BuscarPorId(int id);
         Task<ResponseUserDto> Criar(CreateUserDto dto);
         Task<ResponseUserDto> Atualizar(int id, UpdateUserDto dto);

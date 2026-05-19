@@ -19,7 +19,8 @@ namespace Gestao_veiculos.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get() => Ok(await _service.ListarTodos());
+        public async Task<IActionResult> Get([FromQuery] PaginationParams pagination) =>
+            Ok(await _service.ListarTodos(pagination));
 
         [HttpGet("{id_usuario}")]
         public async Task<IActionResult> GetById(int id_usuario)

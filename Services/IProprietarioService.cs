@@ -4,7 +4,7 @@ namespace Gestao_veiculos.Services
 {
     public interface IProprietarioService
     {
-        Task<IEnumerable<ResponseProprietarioDto>> ListarTodos();
+        Task<PagedResultDto<ResponseProprietarioDto>> ListarTodos(PaginationParams pagination);
         Task<ResponseProprietarioDto?> BuscarPorId(int id);
         Task<ResponseProprietarioDto> Criar(CreateProprietarioDto dto);
         Task<ResponseProprietarioDto> Atualizar(int id, CreateProprietarioDto dto);

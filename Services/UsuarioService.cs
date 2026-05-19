@@ -14,8 +14,23 @@ namespace Gestao_veiculos.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<ResponseUserDto>> ListarTodos() =>
-            await _context.Usuarios.Select(u => ToResponse(u)).ToListAsync();
+        public async Task<PagedResultDto<ResponseUserDto>> ListarTodos(PaginationParams pagination)
+        {
+            var total = await _context.Usuarios.CountAsync();
+            var items = await _context.Usuarios
+                .Skip((pagination.Page - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .Select(u => ToResponse(u))
+                .ToListAsync();
+
+            return new PagedResultDto<ResponseUserDto>
+            {
+                Items      = items,
+                Page       = pagination.Page,
+                PageSize   = pagination.PageSize,
+                TotalCount = total
+            };
+        }
 
         public async Task<ResponseUserDto?> BuscarPorId(int id)
         {
