@@ -8,10 +8,12 @@ namespace Gestao_veiculos.Services
     public class ProprietarioService : IProprietarioService
     {
         private readonly AppDbContext _context;
+        private readonly ILogger<ProprietarioService> _logger;
 
-        public ProprietarioService(AppDbContext context)
+        public ProprietarioService(AppDbContext context, ILogger<ProprietarioService> logger)
         {
             _context = context;
+            _logger  = logger;
         }
 
         public async Task<PagedResultDto<ResponseProprietarioDto>> ListarTodos(PaginationParams pagination)
@@ -41,7 +43,10 @@ namespace Gestao_veiculos.Services
         public async Task<ResponseProprietarioDto> Criar(CreateProprietarioDto dto)
         {
             if (await _context.Proprietarios.AnyAsync(p => p.Cpf == dto.Cpf))
+            {
+                _logger.LogWarning("Tentativa de cadastro com CPF já existente: {Cpf}", dto.Cpf);
                 throw new InvalidOperationException("CPF já cadastrado.");
+            }
 
             var proprietario = new Proprietario
             {
@@ -54,16 +59,24 @@ namespace Gestao_veiculos.Services
             _context.Proprietarios.Add(proprietario);
             await _context.SaveChangesAsync();
 
+            _logger.LogInformation("Proprietário criado: Id={Id}, CPF={Cpf}", proprietario.Id_proprietario, proprietario.Cpf);
             return ToResponse(proprietario);
         }
 
         public async Task<ResponseProprietarioDto> Atualizar(int id, CreateProprietarioDto dto)
         {
-            var proprietario = await _context.Proprietarios.FindAsync(id)
-                ?? throw new KeyNotFoundException("Proprietário não encontrado.");
+            var proprietario = await _context.Proprietarios.FindAsync(id);
+            if (proprietario is null)
+            {
+                _logger.LogWarning("Proprietário não encontrado para atualização: Id={Id}", id);
+                throw new KeyNotFoundException("Proprietário não encontrado.");
+            }
 
             if (await _context.Proprietarios.AnyAsync(p => p.Cpf == dto.Cpf && p.Id_proprietario != id))
+            {
+                _logger.LogWarning("CPF em conflito na atualização do proprietário Id={Id}: {Cpf}", id, dto.Cpf);
                 throw new InvalidOperationException("CPF já está em uso por outro proprietário.");
+            }
 
             proprietario.Nome     = dto.Nome;
             proprietario.Cpf      = dto.Cpf;
@@ -72,16 +85,23 @@ namespace Gestao_veiculos.Services
 
             await _context.SaveChangesAsync();
 
+            _logger.LogInformation("Proprietário atualizado: Id={Id}", id);
             return ToResponse(proprietario);
         }
 
         public async Task Deletar(int id)
         {
-            var proprietario = await _context.Proprietarios.FindAsync(id)
-                ?? throw new KeyNotFoundException("Proprietário não encontrado.");
+            var proprietario = await _context.Proprietarios.FindAsync(id);
+            if (proprietario is null)
+            {
+                _logger.LogWarning("Proprietário não encontrado para exclusão: Id={Id}", id);
+                throw new KeyNotFoundException("Proprietário não encontrado.");
+            }
 
             _context.Proprietarios.Remove(proprietario);
             await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Proprietário excluído: Id={Id}", id);
         }
 
         private static ResponseProprietarioDto ToResponse(Proprietario p) => new()

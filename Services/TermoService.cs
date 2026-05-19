@@ -8,10 +8,12 @@ namespace Gestao_veiculos.Services
     public class TermoService : ITermoService
     {
         private readonly AppDbContext _context;
+        private readonly ILogger<TermoService> _logger;
 
-        public TermoService(AppDbContext context)
+        public TermoService(AppDbContext context, ILogger<TermoService> logger)
         {
             _context = context;
+            _logger  = logger;
         }
 
         public async Task<PagedResultDto<ResponseTermoDto>> ListarTodos(PaginationParams pagination)
@@ -41,7 +43,10 @@ namespace Gestao_veiculos.Services
         public async Task<ResponseTermoDto> Criar(CreateTermoDto dto)
         {
             if (!await _context.Propostas.AnyAsync(p => p.Id_proposta == dto.Id_proposta))
+            {
+                _logger.LogWarning("Termo rejeitado — proposta não encontrada: Id={Id}", dto.Id_proposta);
                 throw new KeyNotFoundException("Proposta informada não existe.");
+            }
 
             var termo = new Termo
             {
@@ -55,16 +60,24 @@ namespace Gestao_veiculos.Services
             _context.Termos.Add(termo);
             await _context.SaveChangesAsync();
 
+            _logger.LogInformation("Termo criado: Id={Id}, Proposta={IdProposta}", termo.Id_termo, termo.Id_proposta);
             return ToResponse(termo);
         }
 
         public async Task<ResponseTermoDto> Atualizar(int id, CreateTermoDto dto)
         {
-            var termo = await _context.Termos.FindAsync(id)
-                ?? throw new KeyNotFoundException("Termo não encontrado.");
+            var termo = await _context.Termos.FindAsync(id);
+            if (termo is null)
+            {
+                _logger.LogWarning("Termo não encontrado para atualização: Id={Id}", id);
+                throw new KeyNotFoundException("Termo não encontrado.");
+            }
 
             if (!await _context.Propostas.AnyAsync(p => p.Id_proposta == dto.Id_proposta))
+            {
+                _logger.LogWarning("Atualização de termo rejeitada — proposta não encontrada: Id={Id}", dto.Id_proposta);
                 throw new KeyNotFoundException("Proposta informada não existe.");
+            }
 
             termo.numero_termo    = dto.Numero_termo;
             termo.status_termo    = dto.Status_termo!.Value;
@@ -74,16 +87,23 @@ namespace Gestao_veiculos.Services
 
             await _context.SaveChangesAsync();
 
+            _logger.LogInformation("Termo atualizado: Id={Id}", id);
             return ToResponse(termo);
         }
 
         public async Task Deletar(int id)
         {
-            var termo = await _context.Termos.FindAsync(id)
-                ?? throw new KeyNotFoundException("Termo não encontrado.");
+            var termo = await _context.Termos.FindAsync(id);
+            if (termo is null)
+            {
+                _logger.LogWarning("Termo não encontrado para exclusão: Id={Id}", id);
+                throw new KeyNotFoundException("Termo não encontrado.");
+            }
 
             _context.Termos.Remove(termo);
             await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Termo excluído: Id={Id}", id);
         }
 
         private static ResponseTermoDto ToResponse(Termo t) => new()
