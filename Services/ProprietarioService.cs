@@ -1,6 +1,7 @@
 using Gestao_veiculos.Data;
 using Gestao_veiculos.DTOs;
 using Gestao_veiculos.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Gestao_veiculos.Services
 {
@@ -13,68 +14,68 @@ namespace Gestao_veiculos.Services
             _context = context;
         }
 
-        public IEnumerable<ResponseProprietarioDto> ListarTodos() =>
-            _context.Proprietarios.Select(p => ToResponse(p)).ToList();
+        public async Task<IEnumerable<ResponseProprietarioDto>> ListarTodos() =>
+            await _context.Proprietarios.Select(p => ToResponse(p)).ToListAsync();
 
-        public ResponseProprietarioDto? BuscarPorId(int id)
+        public async Task<ResponseProprietarioDto?> BuscarPorId(int id)
         {
-            var p = _context.Proprietarios.Find(id);
+            var p = await _context.Proprietarios.FindAsync(id);
             return p is null ? null : ToResponse(p);
         }
 
-        public ResponseProprietarioDto Criar(CreateProprietarioDto dto)
+        public async Task<ResponseProprietarioDto> Criar(CreateProprietarioDto dto)
         {
-            if (_context.Proprietarios.Any(p => p.Cpf == dto.Cpf))
+            if (await _context.Proprietarios.AnyAsync(p => p.Cpf == dto.Cpf))
                 throw new InvalidOperationException("CPF já cadastrado.");
 
             var proprietario = new Proprietario
             {
-                Nome = dto.Nome,
-                Cpf = dto.Cpf,
+                Nome     = dto.Nome,
+                Cpf      = dto.Cpf,
                 Telefone = dto.Telefone,
-                Email = dto.Email
+                Email    = dto.Email
             };
 
             _context.Proprietarios.Add(proprietario);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return ToResponse(proprietario);
         }
 
-        public ResponseProprietarioDto Atualizar(int id, CreateProprietarioDto dto)
+        public async Task<ResponseProprietarioDto> Atualizar(int id, CreateProprietarioDto dto)
         {
-            var proprietario = _context.Proprietarios.Find(id)
+            var proprietario = await _context.Proprietarios.FindAsync(id)
                 ?? throw new KeyNotFoundException("Proprietário não encontrado.");
 
-            if (_context.Proprietarios.Any(p => p.Cpf == dto.Cpf && p.Id_proprietario != id))
+            if (await _context.Proprietarios.AnyAsync(p => p.Cpf == dto.Cpf && p.Id_proprietario != id))
                 throw new InvalidOperationException("CPF já está em uso por outro proprietário.");
 
-            proprietario.Nome = dto.Nome;
-            proprietario.Cpf = dto.Cpf;
+            proprietario.Nome     = dto.Nome;
+            proprietario.Cpf      = dto.Cpf;
             proprietario.Telefone = dto.Telefone;
-            proprietario.Email = dto.Email;
+            proprietario.Email    = dto.Email;
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return ToResponse(proprietario);
         }
 
-        public void Deletar(int id)
+        public async Task Deletar(int id)
         {
-            var proprietario = _context.Proprietarios.Find(id)
+            var proprietario = await _context.Proprietarios.FindAsync(id)
                 ?? throw new KeyNotFoundException("Proprietário não encontrado.");
 
             _context.Proprietarios.Remove(proprietario);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
         private static ResponseProprietarioDto ToResponse(Proprietario p) => new()
         {
             Id_proprietario = p.Id_proprietario,
-            Nome = p.Nome,
-            Cpf = p.Cpf,
-            Telefone = p.Telefone,
-            Email = p.Email
+            Nome            = p.Nome,
+            Cpf             = p.Cpf,
+            Telefone        = p.Telefone,
+            Email           = p.Email
         };
     }
 }

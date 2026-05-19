@@ -18,54 +18,56 @@ namespace Gestao_veiculos.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get() => Ok(_service.ListarTodos());
+        public async Task<IActionResult> Get() => Ok(await _service.ListarTodos());
 
         [HttpGet("{id_termo}")]
-        public IActionResult GetById(int id_termo)
+        public async Task<IActionResult> GetById(int id_termo)
         {
-            var termo = _service.BuscarPorId(id_termo);
-            return termo is null ? NotFound() : Ok(termo);
+            var termo = await _service.BuscarPorId(id_termo);
+            return termo is null
+                ? Problem(statusCode: StatusCodes.Status404NotFound)
+                : Ok(termo);
         }
 
         [HttpPost]
-        public IActionResult Post(CreateTermoDto dto)
+        public async Task<IActionResult> Post(CreateTermoDto dto)
         {
             try
             {
-                var termo = _service.Criar(dto);
+                var termo = await _service.Criar(dto);
                 return CreatedAtAction(nameof(GetById), new { id_termo = termo.Id_termo }, termo);
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(ex.Message);
+                return Problem(detail: ex.Message, statusCode: StatusCodes.Status404NotFound);
             }
         }
 
         [HttpPut("{id_termo}")]
-        public IActionResult Put(int id_termo, CreateTermoDto dto)
+        public async Task<IActionResult> Put(int id_termo, CreateTermoDto dto)
         {
             try
             {
-                var termo = _service.Atualizar(id_termo, dto);
+                var termo = await _service.Atualizar(id_termo, dto);
                 return Ok(termo);
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(ex.Message);
+                return Problem(detail: ex.Message, statusCode: StatusCodes.Status404NotFound);
             }
         }
 
         [HttpDelete("{id_termo}")]
-        public IActionResult Delete(int id_termo)
+        public async Task<IActionResult> Delete(int id_termo)
         {
             try
             {
-                _service.Deletar(id_termo);
+                await _service.Deletar(id_termo);
                 return NoContent();
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(ex.Message);
+                return Problem(detail: ex.Message, statusCode: StatusCodes.Status404NotFound);
             }
         }
     }

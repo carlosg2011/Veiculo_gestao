@@ -18,58 +18,60 @@ namespace Gestao_veiculos.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get() => Ok(_service.ListarTodos());
+        public async Task<IActionResult> Get() => Ok(await _service.ListarTodos());
 
         [HttpGet("{id_veiculo}")]
-        public IActionResult GetById(int id_veiculo)
+        public async Task<IActionResult> GetById(int id_veiculo)
         {
-            var veiculo = _service.BuscarPorId(id_veiculo);
-            return veiculo is null ? NotFound() : Ok(veiculo);
+            var veiculo = await _service.BuscarPorId(id_veiculo);
+            return veiculo is null
+                ? Problem(statusCode: StatusCodes.Status404NotFound)
+                : Ok(veiculo);
         }
 
         [HttpPost]
-        public IActionResult Post(CreateVeiculoDto dto)
+        public async Task<IActionResult> Post(CreateVeiculoDto dto)
         {
             try
             {
-                var veiculo = _service.Criar(dto);
+                var veiculo = await _service.Criar(dto);
                 return CreatedAtAction(nameof(GetById), new { id_veiculo = veiculo.Id_veiculo }, veiculo);
             }
             catch (InvalidOperationException ex)
             {
-                return Conflict(ex.Message);
+                return Problem(detail: ex.Message, statusCode: StatusCodes.Status409Conflict);
             }
         }
 
         [HttpPut("{id_veiculo}")]
-        public IActionResult Put(int id_veiculo, CreateVeiculoDto dto)
+        public async Task<IActionResult> Put(int id_veiculo, CreateVeiculoDto dto)
         {
             try
             {
-                var veiculo = _service.Atualizar(id_veiculo, dto);
+                var veiculo = await _service.Atualizar(id_veiculo, dto);
                 return Ok(veiculo);
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(ex.Message);
+                return Problem(detail: ex.Message, statusCode: StatusCodes.Status404NotFound);
             }
             catch (InvalidOperationException ex)
             {
-                return Conflict(ex.Message);
+                return Problem(detail: ex.Message, statusCode: StatusCodes.Status409Conflict);
             }
         }
 
         [HttpDelete("{id_veiculo}")]
-        public IActionResult Delete(int id_veiculo)
+        public async Task<IActionResult> Delete(int id_veiculo)
         {
             try
             {
-                _service.Deletar(id_veiculo);
+                await _service.Deletar(id_veiculo);
                 return NoContent();
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(ex.Message);
+                return Problem(detail: ex.Message, statusCode: StatusCodes.Status404NotFound);
             }
         }
     }

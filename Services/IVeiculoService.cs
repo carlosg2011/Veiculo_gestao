@@ -4,10 +4,10 @@ namespace Gestao_veiculos.Services
 {
     public interface IVeiculoService
     {
-        IEnumerable<ResponseVeiculoDto> ListarTodos();
-        ResponseVeiculoDto? BuscarPorId(int id);
-        ResponseVeiculoDto Criar(CreateVeiculoDto dto);
-        ResponseVeiculoDto Atualizar(int id, CreateVeiculoDto dto);
-        void Deletar(int id);
+        Task<IEnumerable<ResponseVeiculoDto>> ListarTodos();
+        Task<ResponseVeiculoDto?> BuscarPorId(int id);
+        Task<ResponseVeiculoDto> Criar(CreateVeiculoDto dto);
+        Task<ResponseVeiculoDto> Atualizar(int id, CreateVeiculoDto dto);
+        Task Deletar(int id);
     }
 }

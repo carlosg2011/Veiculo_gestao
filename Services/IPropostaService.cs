@@ -4,10 +4,10 @@ namespace Gestao_veiculos.Services
 {
     public interface IPropostaService
     {
-        IEnumerable<ResponsePropostaDto> ListarTodos();
-        ResponsePropostaDto? BuscarPorId(int id);
-        ResponsePropostaDto Criar(CreatePropostaDto dto);
-        ResponsePropostaDto Atualizar(int id, CreatePropostaDto dto);
-        void Deletar(int id);
+        Task<IEnumerable<ResponsePropostaDto>> ListarTodos();
+        Task<ResponsePropostaDto?> BuscarPorId(int id);
+        Task<ResponsePropostaDto> Criar(CreatePropostaDto dto);
+        Task<ResponsePropostaDto> Atualizar(int id, CreatePropostaDto dto);
+        Task Deletar(int id);
     }
 }

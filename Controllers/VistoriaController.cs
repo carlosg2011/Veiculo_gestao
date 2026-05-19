@@ -18,54 +18,56 @@ namespace Gestao_veiculos.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get() => Ok(_service.ListarTodos());
+        public async Task<IActionResult> Get() => Ok(await _service.ListarTodos());
 
         [HttpGet("{id_vistoria}")]
-        public IActionResult GetById(int id_vistoria)
+        public async Task<IActionResult> GetById(int id_vistoria)
         {
-            var vistoria = _service.BuscarPorId(id_vistoria);
-            return vistoria is null ? NotFound() : Ok(vistoria);
+            var vistoria = await _service.BuscarPorId(id_vistoria);
+            return vistoria is null
+                ? Problem(statusCode: StatusCodes.Status404NotFound)
+                : Ok(vistoria);
         }
 
         [HttpPost]
-        public IActionResult Post(CreateVistoriaDto dto)
+        public async Task<IActionResult> Post(CreateVistoriaDto dto)
         {
             try
             {
-                var vistoria = _service.Criar(dto);
+                var vistoria = await _service.Criar(dto);
                 return CreatedAtAction(nameof(GetById), new { id_vistoria = vistoria.Id_vistoria }, vistoria);
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(ex.Message);
+                return Problem(detail: ex.Message, statusCode: StatusCodes.Status404NotFound);
             }
         }
 
         [HttpPut("{id_vistoria}")]
-        public IActionResult Put(int id_vistoria, UpdateVistoriaDto dto)
+        public async Task<IActionResult> Put(int id_vistoria, UpdateVistoriaDto dto)
         {
             try
             {
-                var vistoria = _service.Atualizar(id_vistoria, dto);
+                var vistoria = await _service.Atualizar(id_vistoria, dto);
                 return Ok(vistoria);
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(ex.Message);
+                return Problem(detail: ex.Message, statusCode: StatusCodes.Status404NotFound);
             }
         }
 
         [HttpDelete("{id_vistoria}")]
-        public IActionResult Delete(int id_vistoria)
+        public async Task<IActionResult> Delete(int id_vistoria)
         {
             try
             {
-                _service.Deletar(id_vistoria);
+                await _service.Deletar(id_vistoria);
                 return NoContent();
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(ex.Message);
+                return Problem(detail: ex.Message, statusCode: StatusCodes.Status404NotFound);
             }
         }
     }

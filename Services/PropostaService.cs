@@ -1,6 +1,7 @@
 using Gestao_veiculos.Data;
 using Gestao_veiculos.DTOs;
 using Gestao_veiculos.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Gestao_veiculos.Services
 {
@@ -13,84 +14,84 @@ namespace Gestao_veiculos.Services
             _context = context;
         }
 
-        public IEnumerable<ResponsePropostaDto> ListarTodos() =>
-            _context.Propostas.Select(p => ToResponse(p)).ToList();
+        public async Task<IEnumerable<ResponsePropostaDto>> ListarTodos() =>
+            await _context.Propostas.Select(p => ToResponse(p)).ToListAsync();
 
-        public ResponsePropostaDto? BuscarPorId(int id)
+        public async Task<ResponsePropostaDto?> BuscarPorId(int id)
         {
-            var p = _context.Propostas.Find(id);
+            var p = await _context.Propostas.FindAsync(id);
             return p is null ? null : ToResponse(p);
         }
 
-        public ResponsePropostaDto Criar(CreatePropostaDto dto)
+        public async Task<ResponsePropostaDto> Criar(CreatePropostaDto dto)
         {
-            if (!_context.Usuarios.Any(u => u.Id_usuario == dto.Id_usuario))
+            if (!await _context.Usuarios.AnyAsync(u => u.Id_usuario == dto.Id_usuario))
                 throw new KeyNotFoundException("Usuário informado não existe.");
-            if (!_context.Proprietarios.Any(p => p.Id_proprietario == dto.Id_proprietario))
+            if (!await _context.Proprietarios.AnyAsync(p => p.Id_proprietario == dto.Id_proprietario))
                 throw new KeyNotFoundException("Proprietário informado não existe.");
-            if (!_context.Veiculos.Any(v => v.Id_veiculo == dto.Id_veiculo))
+            if (!await _context.Veiculos.AnyAsync(v => v.Id_veiculo == dto.Id_veiculo))
                 throw new KeyNotFoundException("Veículo informado não existe.");
-            if (_context.Propostas.Any(p => p.sessao_proposta == dto.Sessao_proposta))
+            if (await _context.Propostas.AnyAsync(p => p.sessao_proposta == dto.Sessao_proposta))
                 throw new InvalidOperationException("Já existe uma proposta com esse código.");
 
             var proposta = new Proposta
             {
                 sessao_proposta = dto.Sessao_proposta,
-                Status = dto.Status,
-                Data_Criacao = DateTime.UtcNow,
-                Id_usuario = dto.Id_usuario,
-                Id_veiculo = dto.Id_veiculo,
+                Status          = dto.Status,
+                Data_Criacao    = DateTime.UtcNow,
+                Id_usuario      = dto.Id_usuario,
+                Id_veiculo      = dto.Id_veiculo,
                 Id_proprietario = dto.Id_proprietario
             };
 
             _context.Propostas.Add(proposta);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return ToResponse(proposta);
         }
 
-        public ResponsePropostaDto Atualizar(int id, CreatePropostaDto dto)
+        public async Task<ResponsePropostaDto> Atualizar(int id, CreatePropostaDto dto)
         {
-            var proposta = _context.Propostas.Find(id)
+            var proposta = await _context.Propostas.FindAsync(id)
                 ?? throw new KeyNotFoundException("Proposta não encontrada.");
 
-            if (!_context.Usuarios.Any(u => u.Id_usuario == dto.Id_usuario))
+            if (!await _context.Usuarios.AnyAsync(u => u.Id_usuario == dto.Id_usuario))
                 throw new KeyNotFoundException("Usuário informado não existe.");
-            if (!_context.Proprietarios.Any(p => p.Id_proprietario == dto.Id_proprietario))
+            if (!await _context.Proprietarios.AnyAsync(p => p.Id_proprietario == dto.Id_proprietario))
                 throw new KeyNotFoundException("Proprietário informado não existe.");
-            if (!_context.Veiculos.Any(v => v.Id_veiculo == dto.Id_veiculo))
+            if (!await _context.Veiculos.AnyAsync(v => v.Id_veiculo == dto.Id_veiculo))
                 throw new KeyNotFoundException("Veículo informado não existe.");
-            if (_context.Propostas.Any(p => p.sessao_proposta == dto.Sessao_proposta && p.Id_proposta != id))
+            if (await _context.Propostas.AnyAsync(p => p.sessao_proposta == dto.Sessao_proposta && p.Id_proposta != id))
                 throw new InvalidOperationException("Já existe outra proposta com esse código.");
 
             proposta.sessao_proposta = dto.Sessao_proposta;
-            proposta.Status = dto.Status;
-            proposta.Id_usuario = dto.Id_usuario;
-            proposta.Id_veiculo = dto.Id_veiculo;
+            proposta.Status          = dto.Status;
+            proposta.Id_usuario      = dto.Id_usuario;
+            proposta.Id_veiculo      = dto.Id_veiculo;
             proposta.Id_proprietario = dto.Id_proprietario;
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return ToResponse(proposta);
         }
 
-        public void Deletar(int id)
+        public async Task Deletar(int id)
         {
-            var proposta = _context.Propostas.Find(id)
+            var proposta = await _context.Propostas.FindAsync(id)
                 ?? throw new KeyNotFoundException("Proposta não encontrada.");
 
             _context.Propostas.Remove(proposta);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
         private static ResponsePropostaDto ToResponse(Proposta p) => new()
         {
-            Id_proposta = p.Id_proposta,
+            Id_proposta     = p.Id_proposta,
             Sessao_proposta = p.sessao_proposta,
-            Data_Criacao = p.Data_Criacao,
-            Status = p.Status,
-            Id_usuario = p.Id_usuario,
-            Id_veiculo = p.Id_veiculo,
+            Data_Criacao    = p.Data_Criacao,
+            Status          = p.Status,
+            Id_usuario      = p.Id_usuario,
+            Id_veiculo      = p.Id_veiculo,
             Id_proprietario = p.Id_proprietario
         };
     }

@@ -1,6 +1,7 @@
 using Gestao_veiculos.Data;
 using Gestao_veiculos.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Gestao_veiculos.Controllers
 {
@@ -17,15 +18,14 @@ namespace Gestao_veiculos.Controllers
             _env = env;
         }
 
-
         [HttpPost("admin")]
-        public IActionResult CriarAdmin()
+        public async Task<IActionResult> CriarAdmin()
         {
             if (!_env.IsDevelopment())
                 return NotFound();
 
-            if (_context.Usuarios.Any(u => u.Role == "Admin"))
-                return Conflict("Já existe um usuário Admin cadastrado.");
+            if (await _context.Usuarios.AnyAsync(u => u.Role == "Admin"))
+                return Problem(detail: "Já existe um usuário Admin cadastrado.", statusCode: StatusCodes.Status409Conflict);
 
             var admin = new Usuario
             {
@@ -36,7 +36,7 @@ namespace Gestao_veiculos.Controllers
             };
 
             _context.Usuarios.Add(admin);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return Ok(new
             {

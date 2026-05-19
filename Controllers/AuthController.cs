@@ -2,6 +2,7 @@ using Gestao_veiculos.Data;
 using Gestao_veiculos.DTOs;
 using Gestao_veiculos.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace Gestao_veiculos.Controllers
@@ -22,13 +23,14 @@ namespace Gestao_veiculos.Controllers
         }
 
         [HttpPost("login")]
+        [EnableRateLimiting("login")]
         public async Task<IActionResult> Login(LoginDto dto)
         {
             var usuario = await _context.Usuarios
                 .FirstOrDefaultAsync(u => u.Email == dto.Email);
 
             if (usuario is null || !BCrypt.Net.BCrypt.Verify(dto.Senha, usuario.Senha))
-                return Unauthorized("Email ou senha inválidos.");
+                return Problem(detail: "Email ou senha inválidos.", statusCode: StatusCodes.Status401Unauthorized);
 
             var token = _tokenService.GerarToken(usuario);
             var expiracao = DateTime.UtcNow.AddHours(

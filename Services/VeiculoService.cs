@@ -1,6 +1,7 @@
 using Gestao_veiculos.Data;
 using Gestao_veiculos.DTOs;
 using Gestao_veiculos.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Gestao_veiculos.Services
 {
@@ -13,91 +14,91 @@ namespace Gestao_veiculos.Services
             _context = context;
         }
 
-        public IEnumerable<ResponseVeiculoDto> ListarTodos() =>
-            _context.Veiculos.Select(v => ToResponse(v)).ToList();
+        public async Task<IEnumerable<ResponseVeiculoDto>> ListarTodos() =>
+            await _context.Veiculos.Select(v => ToResponse(v)).ToListAsync();
 
-        public ResponseVeiculoDto? BuscarPorId(int id)
+        public async Task<ResponseVeiculoDto?> BuscarPorId(int id)
         {
-            var v = _context.Veiculos.Find(id);
+            var v = await _context.Veiculos.FindAsync(id);
             return v is null ? null : ToResponse(v);
         }
 
-        public ResponseVeiculoDto Criar(CreateVeiculoDto dto)
+        public async Task<ResponseVeiculoDto> Criar(CreateVeiculoDto dto)
         {
-            if (_context.Veiculos.Any(v => v.Placa == dto.Placa))
+            if (await _context.Veiculos.AnyAsync(v => v.Placa == dto.Placa))
                 throw new InvalidOperationException("Placa já cadastrada.");
-            if (_context.Veiculos.Any(v => v.Chassi == dto.Chassi))
+            if (await _context.Veiculos.AnyAsync(v => v.Chassi == dto.Chassi))
                 throw new InvalidOperationException("Chassi já cadastrado.");
-            if (_context.Veiculos.Any(v => v.Renavam == dto.Renavam))
+            if (await _context.Veiculos.AnyAsync(v => v.Renavam == dto.Renavam))
                 throw new InvalidOperationException("Renavam já cadastrado.");
 
             var veiculo = new Veiculo
             {
-                Placa = dto.Placa,
-                Marca = dto.Marca,
-                Modelo = dto.Modelo,
+                Placa   = dto.Placa,
+                Marca   = dto.Marca,
+                Modelo  = dto.Modelo,
                 Ano_Fab = dto.Ano_Fab,
                 Ano_Mod = dto.Ano_Mod,
-                Chassi = dto.Chassi,
+                Chassi  = dto.Chassi,
                 Renavam = dto.Renavam,
-                Cor = dto.Cor,
-                Status = dto.Status
+                Cor     = dto.Cor,
+                Status  = dto.Status
             };
 
             _context.Veiculos.Add(veiculo);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return ToResponse(veiculo);
         }
 
-        public ResponseVeiculoDto Atualizar(int id, CreateVeiculoDto dto)
+        public async Task<ResponseVeiculoDto> Atualizar(int id, CreateVeiculoDto dto)
         {
-            var veiculo = _context.Veiculos.Find(id)
+            var veiculo = await _context.Veiculos.FindAsync(id)
                 ?? throw new KeyNotFoundException("Veículo não encontrado.");
 
-            if (_context.Veiculos.Any(v => v.Placa == dto.Placa && v.Id_veiculo != id))
+            if (await _context.Veiculos.AnyAsync(v => v.Placa == dto.Placa && v.Id_veiculo != id))
                 throw new InvalidOperationException("Placa já está em uso por outro veículo.");
-            if (_context.Veiculos.Any(v => v.Chassi == dto.Chassi && v.Id_veiculo != id))
+            if (await _context.Veiculos.AnyAsync(v => v.Chassi == dto.Chassi && v.Id_veiculo != id))
                 throw new InvalidOperationException("Chassi já está em uso por outro veículo.");
-            if (_context.Veiculos.Any(v => v.Renavam == dto.Renavam && v.Id_veiculo != id))
+            if (await _context.Veiculos.AnyAsync(v => v.Renavam == dto.Renavam && v.Id_veiculo != id))
                 throw new InvalidOperationException("Renavam já está em uso por outro veículo.");
 
-            veiculo.Placa = dto.Placa;
-            veiculo.Marca = dto.Marca;
-            veiculo.Modelo = dto.Modelo;
+            veiculo.Placa   = dto.Placa;
+            veiculo.Marca   = dto.Marca;
+            veiculo.Modelo  = dto.Modelo;
             veiculo.Ano_Fab = dto.Ano_Fab;
             veiculo.Ano_Mod = dto.Ano_Mod;
-            veiculo.Chassi = dto.Chassi;
+            veiculo.Chassi  = dto.Chassi;
             veiculo.Renavam = dto.Renavam;
-            veiculo.Cor = dto.Cor;
-            veiculo.Status = dto.Status;
+            veiculo.Cor     = dto.Cor;
+            veiculo.Status  = dto.Status;
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return ToResponse(veiculo);
         }
 
-        public void Deletar(int id)
+        public async Task Deletar(int id)
         {
-            var veiculo = _context.Veiculos.Find(id)
+            var veiculo = await _context.Veiculos.FindAsync(id)
                 ?? throw new KeyNotFoundException("Veículo não encontrado.");
 
             _context.Veiculos.Remove(veiculo);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
         private static ResponseVeiculoDto ToResponse(Veiculo v) => new()
         {
             Id_veiculo = v.Id_veiculo,
-            Placa = v.Placa,
-            Marca = v.Marca,
-            Modelo = v.Modelo,
-            Ano_Fab = v.Ano_Fab,
-            Ano_Mod = v.Ano_Mod,
-            Chassi = v.Chassi,
-            Renavam = v.Renavam,
-            Cor = v.Cor,
-            Status = v.Status
+            Placa      = v.Placa,
+            Marca      = v.Marca,
+            Modelo     = v.Modelo,
+            Ano_Fab    = v.Ano_Fab,
+            Ano_Mod    = v.Ano_Mod,
+            Chassi     = v.Chassi,
+            Renavam    = v.Renavam,
+            Cor        = v.Cor,
+            Status     = v.Status
         };
     }
 }
