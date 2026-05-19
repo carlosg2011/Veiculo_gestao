@@ -113,11 +113,11 @@ namespace Gestao_veiculos.Data
                     .HasMaxLength(50)
                     .IsRequired();
 
-                entity.Property(v => v.Ano_Fab)
+                entity.Property(v => v.AnoFab)
                     .HasColumnName("ano_fabricacao")
                     .IsRequired();
 
-                entity.Property(v => v.Ano_Mod)
+                entity.Property(v => v.AnoMod)
                     .HasColumnName("ano_modelo")
                     .IsRequired();
 
@@ -158,12 +158,12 @@ namespace Gestao_veiculos.Data
                 entity.Property(p => p.Id_proposta)
                     .HasColumnName("id_proposta");
 
-                entity.Property(p => p.sessao_proposta)
+                entity.Property(p => p.SessaoProposta)
                     .HasColumnName("cod_proposta")
                     .HasMaxLength(25)
                     .IsRequired();
 
-                entity.Property(p => p.Data_Criacao)
+                entity.Property(p => p.DataCriacao)
                     .HasColumnName("data_criacao")
                     .IsRequired();
 
@@ -210,17 +210,17 @@ namespace Gestao_veiculos.Data
                 entity.Property(v => v.Id_vistoria)
                     .HasColumnName("id_vistoria");
 
-                entity.Property(v => v.Data_solicitacao)
+                entity.Property(v => v.DataSolicitacao)
                     .HasColumnName("data_solicitacao")
                     .IsRequired();
 
-                entity.Property(v => v.data_inicio)
+                entity.Property(v => v.DataInicio)
                     .HasColumnName("data_inicio");
 
-                entity.Property(v => v.data_conclusao)
+                entity.Property(v => v.DataConclusao)
                     .HasColumnName("data_conclusao");
 
-                entity.Property(v => v.status_vistoria)
+                entity.Property(v => v.Status)
                     .HasColumnName("status_vistoria")
                     .HasMaxLength(30)
                     .IsRequired()
@@ -254,22 +254,22 @@ namespace Gestao_veiculos.Data
                 entity.Property(t => t.Id_termo)
                     .HasColumnName("id_termo");
 
-                entity.Property(t => t.numero_termo)
+                entity.Property(t => t.NumeroTermo)
                     .HasColumnName("numero_termo")
                     .HasMaxLength(25)
                     .IsRequired();
 
-                entity.Property(t => t.status_termo)
+                entity.Property(t => t.Status)
                     .HasColumnName("status_termo")
                     .HasMaxLength(30)
                     .IsRequired()
                     .HasConversion<string>();
 
-                entity.Property(t => t.data_envio)
+                entity.Property(t => t.DataEnvio)
                     .HasColumnName("data_envio")
                     .IsRequired();
 
-                entity.Property(t => t.data_assinatura)
+                entity.Property(t => t.DataAssinatura)
                     .HasColumnName("data_assinatura");
 
                 entity.Property(t => t.Id_proposta)

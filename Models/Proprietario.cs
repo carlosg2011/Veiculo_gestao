@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
-
 namespace Gestao_veiculos.Models
 {
     public class Proprietario

@@ -81,17 +81,17 @@ namespace Gestao_veiculos.Services
                 throw new InvalidOperationException($"Contrato emitido para a placa {veiculo.Placa}.");
             }
 
-            if (await _context.Propostas.AnyAsync(p => p.sessao_proposta == dto.Sessao_proposta))
+            if (await _context.Propostas.AnyAsync(p => p.SessaoProposta == dto.SessaoProposta))
             {
-                _logger.LogWarning("Proposta rejeitada — código duplicado: {Sessao}", dto.Sessao_proposta);
+                _logger.LogWarning("Proposta rejeitada — código duplicado: {Sessao}", dto.SessaoProposta);
                 throw new InvalidOperationException("Já existe uma proposta com esse código.");
             }
 
             var proposta = new Proposta
             {
-                sessao_proposta = dto.Sessao_proposta,
+                SessaoProposta  = dto.SessaoProposta,
                 Status          = dto.Status!.Value,
-                Data_Criacao    = DateTime.UtcNow,
+                DataCriacao     = DateTime.UtcNow,
                 Id_usuario      = dto.Id_usuario,
                 Id_veiculo      = dto.Id_veiculo,
                 Id_proprietario = dto.Id_proprietario
@@ -144,13 +144,13 @@ namespace Gestao_veiculos.Services
                 throw new InvalidOperationException($"Contrato emitido para a placa {veiculo.Placa}.");
             }
 
-            if (await _context.Propostas.AnyAsync(p => p.sessao_proposta == dto.Sessao_proposta && p.Id_proposta != id))
+            if (await _context.Propostas.AnyAsync(p => p.SessaoProposta == dto.SessaoProposta && p.Id_proposta != id))
             {
-                _logger.LogWarning("Atualização de proposta rejeitada — código duplicado: {Sessao}", dto.Sessao_proposta);
+                _logger.LogWarning("Atualização de proposta rejeitada — código duplicado: {Sessao}", dto.SessaoProposta);
                 throw new InvalidOperationException("Já existe outra proposta com esse código.");
             }
 
-            proposta.sessao_proposta = dto.Sessao_proposta;
+            proposta.SessaoProposta  = dto.SessaoProposta;
             proposta.Status          = dto.Status!.Value;
             proposta.Id_usuario      = dto.Id_usuario;
             proposta.Id_veiculo      = dto.Id_veiculo;
@@ -180,8 +180,8 @@ namespace Gestao_veiculos.Services
         private static ResponsePropostaDto ToResponse(Proposta p) => new()
         {
             Id_proposta     = p.Id_proposta,
-            Sessao_proposta = p.sessao_proposta,
-            Data_Criacao    = p.Data_Criacao,
+            SessaoProposta  = p.SessaoProposta,
+            DataCriacao     = p.DataCriacao,
             Status          = p.Status,
             Id_usuario      = p.Id_usuario,
             Id_veiculo      = p.Id_veiculo,

@@ -63,8 +63,8 @@ namespace Gestao_veiculos.Services
                 Placa   = dto.Placa,
                 Marca   = dto.Marca,
                 Modelo  = dto.Modelo,
-                Ano_Fab = dto.Ano_Fab,
-                Ano_Mod = dto.Ano_Mod,
+                AnoFab  = dto.AnoFab,
+                AnoMod  = dto.AnoMod,
                 Chassi  = dto.Chassi,
                 Renavam = dto.Renavam,
                 Cor     = dto.Cor,
@@ -106,8 +106,8 @@ namespace Gestao_veiculos.Services
             veiculo.Placa   = dto.Placa;
             veiculo.Marca   = dto.Marca;
             veiculo.Modelo  = dto.Modelo;
-            veiculo.Ano_Fab = dto.Ano_Fab;
-            veiculo.Ano_Mod = dto.Ano_Mod;
+            veiculo.AnoFab  = dto.AnoFab;
+            veiculo.AnoMod  = dto.AnoMod;
             veiculo.Chassi  = dto.Chassi;
             veiculo.Renavam = dto.Renavam;
             veiculo.Cor     = dto.Cor;
@@ -140,8 +140,8 @@ namespace Gestao_veiculos.Services
             Placa      = v.Placa,
             Marca      = v.Marca,
             Modelo     = v.Modelo,
-            Ano_Fab    = v.Ano_Fab,
-            Ano_Mod    = v.Ano_Mod,
+            AnoFab     = v.AnoFab,
+            AnoMod     = v.AnoMod,
             Chassi     = v.Chassi,
             Renavam    = v.Renavam,
             Cor        = v.Cor,

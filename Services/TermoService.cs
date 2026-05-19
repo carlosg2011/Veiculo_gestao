@@ -50,11 +50,11 @@ namespace Gestao_veiculos.Services
 
             var termo = new Termo
             {
-                numero_termo    = dto.Numero_termo,
-                status_termo    = dto.Status_termo!.Value,
-                data_envio      = dto.Data_envio,
-                data_assinatura = dto.Data_assinatura,
-                Id_proposta     = dto.Id_proposta
+                NumeroTermo    = dto.NumeroTermo,
+                Status         = dto.Status!.Value,
+                DataEnvio      = dto.DataEnvio,
+                DataAssinatura = dto.DataAssinatura,
+                Id_proposta    = dto.Id_proposta
             };
 
             _context.Termos.Add(termo);
@@ -79,11 +79,11 @@ namespace Gestao_veiculos.Services
                 throw new KeyNotFoundException("Proposta informada não existe.");
             }
 
-            termo.numero_termo    = dto.Numero_termo;
-            termo.status_termo    = dto.Status_termo!.Value;
-            termo.data_envio      = dto.Data_envio;
-            termo.data_assinatura = dto.Data_assinatura;
-            termo.Id_proposta     = dto.Id_proposta;
+            termo.NumeroTermo    = dto.NumeroTermo;
+            termo.Status         = dto.Status!.Value;
+            termo.DataEnvio      = dto.DataEnvio;
+            termo.DataAssinatura = dto.DataAssinatura;
+            termo.Id_proposta    = dto.Id_proposta;
 
             await _context.SaveChangesAsync();
 
@@ -108,12 +108,12 @@ namespace Gestao_veiculos.Services
 
         private static ResponseTermoDto ToResponse(Termo t) => new()
         {
-            Id_termo        = t.Id_termo,
-            Numero_termo    = t.numero_termo,
-            Status_termo    = t.status_termo,
-            Data_envio      = t.data_envio,
-            Data_assinatura = t.data_assinatura,
-            Id_proposta     = t.Id_proposta
+            Id_termo       = t.Id_termo,
+            NumeroTermo    = t.NumeroTermo,
+            Status         = t.Status,
+            DataEnvio      = t.DataEnvio,
+            DataAssinatura = t.DataAssinatura,
+            Id_proposta    = t.Id_proposta
         };
     }
 }

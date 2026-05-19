@@ -5,8 +5,8 @@ namespace Gestao_veiculos.Models
     public class Proposta
     {
         public int Id_proposta { get; set; }
-        public string sessao_proposta { get; set; } = string.Empty;
-        public DateTime Data_Criacao { get; set; }
+        public string SessaoProposta { get; set; } = string.Empty;
+        public DateTime DataCriacao { get; set; }
         public StatusProposta Status { get; set; }
         public int Id_usuario { get; set; }
         public int Id_veiculo { get; set; }

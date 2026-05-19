@@ -6,9 +6,9 @@ namespace Gestao_veiculos.DTOs
     public class UpdateVistoriaDto
     {
         [Required(ErrorMessage = "Status é obrigatório.")]
-        public StatusVistoria? Status_vistoria { get; set; }
+        public StatusVistoria? Status { get; set; }
 
-        public DateTime? Data_inicio { get; set; }
-        public DateTime? Data_conclusao { get; set; }
+        public DateTime? DataInicio { get; set; }
+        public DateTime? DataConclusao { get; set; }
     }
 }

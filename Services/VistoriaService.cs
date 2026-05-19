@@ -55,10 +55,10 @@ namespace Gestao_veiculos.Services
 
             var vistoria = new Vistoria
             {
-                Data_solicitacao = dto.Data_solicitacao,
-                status_vistoria  = dto.Status_vistoria!.Value,
-                Id_proposta      = dto.Id_proposta,
-                Id_usuario       = dto.Id_usuario
+                DataSolicitacao = dto.DataSolicitacao,
+                Status          = dto.Status!.Value,
+                Id_proposta     = dto.Id_proposta,
+                Id_usuario      = dto.Id_usuario
             };
 
             _context.Vistorias.Add(vistoria);
@@ -77,13 +77,13 @@ namespace Gestao_veiculos.Services
                 throw new KeyNotFoundException("Vistoria não encontrada.");
             }
 
-            vistoria.status_vistoria = dto.Status_vistoria!.Value;
-            vistoria.data_inicio     = dto.Data_inicio;
-            vistoria.data_conclusao  = dto.Data_conclusao;
+            vistoria.Status        = dto.Status!.Value;
+            vistoria.DataInicio    = dto.DataInicio;
+            vistoria.DataConclusao = dto.DataConclusao;
 
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Vistoria atualizada: Id={Id}, Status={Status}", id, vistoria.status_vistoria);
+            _logger.LogInformation("Vistoria atualizada: Id={Id}, Status={Status}", id, vistoria.Status);
             return ToResponse(vistoria);
         }
 
@@ -104,13 +104,13 @@ namespace Gestao_veiculos.Services
 
         private static ResponseVistoriaDto ToResponse(Vistoria v) => new()
         {
-            Id_vistoria      = v.Id_vistoria,
-            Data_solicitacao = v.Data_solicitacao,
-            Data_inicio      = v.data_inicio,
-            Data_conclusao   = v.data_conclusao,
-            Status_vistoria  = v.status_vistoria,
-            Id_proposta      = v.Id_proposta,
-            Id_usuario       = v.Id_usuario
+            Id_vistoria     = v.Id_vistoria,
+            DataSolicitacao = v.DataSolicitacao,
+            DataInicio      = v.DataInicio,
+            DataConclusao   = v.DataConclusao,
+            Status          = v.Status,
+            Id_proposta     = v.Id_proposta,
+            Id_usuario      = v.Id_usuario
         };
     }
 }

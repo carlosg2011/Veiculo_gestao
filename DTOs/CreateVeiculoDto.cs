@@ -19,11 +19,11 @@ namespace Gestao_veiculos.DTOs
 
         [Required(ErrorMessage = "Ano de fabricação é obrigatório.")]
         [Range(1900, 2100, ErrorMessage = "Ano de fabricação inválido.")]
-        public int Ano_Fab { get; set; }
+        public int AnoFab { get; set; }
 
         [Required(ErrorMessage = "Ano do modelo é obrigatório.")]
         [Range(1900, 2100, ErrorMessage = "Ano do modelo inválido.")]
-        public int Ano_Mod { get; set; }
+        public int AnoMod { get; set; }
 
         [Required(ErrorMessage = "Chassi é obrigatório.")]
         [MaxLength(17, ErrorMessage = "Chassi pode ter no máximo 17 caracteres.")]

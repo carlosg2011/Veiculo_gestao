@@ -6,10 +6,10 @@ namespace Gestao_veiculos.DTOs
     public class CreateVistoriaDto
     {
         [Required(ErrorMessage = "Data de solicitação é obrigatória.")]
-        public DateTime Data_solicitacao { get; set; }
+        public DateTime DataSolicitacao { get; set; }
 
         [Required(ErrorMessage = "Status é obrigatório.")]
-        public StatusVistoria? Status_vistoria { get; set; }
+        public StatusVistoria? Status { get; set; }
 
         [Required(ErrorMessage = "Id da proposta é obrigatório.")]
         public int Id_proposta { get; set; }

@@ -7,7 +7,7 @@ namespace Gestao_veiculos.DTOs
     {
         [Required(ErrorMessage = "Código da proposta é obrigatório.")]
         [MaxLength(25, ErrorMessage = "Código da proposta pode ter no máximo 25 caracteres.")]
-        public string Sessao_proposta { get; set; } = string.Empty;
+        public string SessaoProposta { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Status é obrigatório.")]
         public StatusProposta? Status { get; set; }
