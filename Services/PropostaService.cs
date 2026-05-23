@@ -24,16 +24,76 @@ namespace Gestao_veiculos.Services
             _logger  = logger;
         }
 
-        public async Task<PagedResultDto<ResponsePropostaDto>> ListarTodos(PaginationParams pagination)
+        public async Task<PagedResultDto<ResponsePropostaDto>> ListarTodos(PaginationParams pagination, int? userId = null)
         {
-            var total = await _context.Propostas.CountAsync();
-            var items = await _context.Propostas
+            var query = userId.HasValue
+                ? _context.Propostas.Where(p => p.Id_usuario == userId.Value)
+                : _context.Propostas.AsQueryable();
+
+            var total = await query.CountAsync();
+            var items = await query
                 .Skip((pagination.Page - 1) * pagination.PageSize)
                 .Take(pagination.PageSize)
                 .Select(p => ToResponse(p))
                 .ToListAsync();
 
             return new PagedResultDto<ResponsePropostaDto>
+            {
+                Items      = items,
+                Page       = pagination.Page,
+                PageSize   = pagination.PageSize,
+                TotalCount = total
+            };
+        }
+
+        public async Task<PagedResultDto<ResponsePropostaCompletoDto>> Buscar(PaginationParams pagination, PropostaFiltroParams filtro)
+        {
+            var query = from p in _context.Propostas
+                        join u in _context.Usuarios on p.Id_usuario equals u.Id_usuario
+                        join prop in _context.Proprietarios on p.Id_proprietario equals prop.Id_proprietario
+                        join v in _context.Veiculos on p.Id_veiculo equals v.Id_veiculo
+                        select new { p, u, prop, v };
+
+            if (!string.IsNullOrWhiteSpace(filtro.Nome))
+                query = query.Where(x => x.prop.Nome.Contains(filtro.Nome));
+            if (!string.IsNullOrWhiteSpace(filtro.Placa))
+                query = query.Where(x => x.v.Placa.Contains(filtro.Placa));
+            if (!string.IsNullOrWhiteSpace(filtro.Renavam))
+                query = query.Where(x => x.v.Renavam.Contains(filtro.Renavam));
+            if (!string.IsNullOrWhiteSpace(filtro.Chassi))
+                query = query.Where(x => x.v.Chassi.Contains(filtro.Chassi));
+            if (filtro.StatusVeiculo.HasValue)
+                query = query.Where(x => x.v.Status == filtro.StatusVeiculo.Value);
+            if (filtro.StatusProposta.HasValue)
+                query = query.Where(x => x.p.Status == filtro.StatusProposta.Value);
+
+            var total = await query.CountAsync();
+            var items = await query
+                .OrderByDescending(x => x.p.DataCriacao)
+                .Skip((pagination.Page - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .Select(x => new ResponsePropostaCompletoDto
+                {
+                    Id_proposta      = x.p.Id_proposta,
+                    SessaoProposta   = x.p.SessaoProposta,
+                    DataCriacao      = x.p.DataCriacao,
+                    StatusProposta   = x.p.Status,
+                    Id_usuario       = x.p.Id_usuario,
+                    NomeUsuario      = x.u.Nome,
+                    Id_proprietario  = x.prop.Id_proprietario,
+                    NomeProprietario = x.prop.Nome,
+                    CpfProprietario  = x.prop.Cpf,
+                    Id_veiculo       = x.v.Id_veiculo,
+                    Placa            = x.v.Placa,
+                    Marca            = x.v.Marca,
+                    Modelo           = x.v.Modelo,
+                    Chassi           = x.v.Chassi,
+                    Renavam          = x.v.Renavam,
+                    StatusVeiculo    = x.v.Status
+                })
+                .ToListAsync();
+
+            return new PagedResultDto<ResponsePropostaCompletoDto>
             {
                 Items      = items,
                 Page       = pagination.Page,

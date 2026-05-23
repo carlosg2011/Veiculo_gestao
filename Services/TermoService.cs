@@ -16,10 +16,23 @@ namespace Gestao_veiculos.Services
             _logger  = logger;
         }
 
-        public async Task<PagedResultDto<ResponseTermoDto>> ListarTodos(PaginationParams pagination)
+        public async Task<PagedResultDto<ResponseTermoDto>> ListarTodos(PaginationParams pagination, int? userId = null)
         {
-            var total = await _context.Termos.CountAsync();
-            var items = await _context.Termos
+            IQueryable<Termo> query;
+            if (userId.HasValue)
+            {
+                var propostaIds = _context.Propostas
+                    .Where(p => p.Id_usuario == userId.Value)
+                    .Select(p => p.Id_proposta);
+                query = _context.Termos.Where(t => propostaIds.Contains(t.Id_proposta));
+            }
+            else
+            {
+                query = _context.Termos.AsQueryable();
+            }
+
+            var total = await query.CountAsync();
+            var items = await query
                 .Skip((pagination.Page - 1) * pagination.PageSize)
                 .Take(pagination.PageSize)
                 .Select(t => ToResponse(t))

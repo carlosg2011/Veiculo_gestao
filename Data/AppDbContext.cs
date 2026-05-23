@@ -208,7 +208,8 @@ namespace Gestao_veiculos.Data
                 entity.HasKey(v => v.Id_vistoria);
 
                 entity.Property(v => v.Id_vistoria)
-                    .HasColumnName("id_vistoria");
+                    .HasColumnName("id_vistoria")
+                    .ValueGeneratedNever();
 
                 entity.Property(v => v.DataSolicitacao)
                     .HasColumnName("data_solicitacao")

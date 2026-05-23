@@ -18,8 +18,12 @@ namespace Gestao_veiculos.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get([FromQuery] PaginationParams pagination) =>
-            Ok(await _service.ListarTodos(pagination));
+        public async Task<IActionResult> Get([FromQuery] PaginationParams pagination, [FromQuery] int? userId) =>
+            Ok(await _service.ListarTodos(pagination, userId));
+
+        [HttpGet("busca")]
+        public async Task<IActionResult> Busca([FromQuery] PaginationParams pagination, [FromQuery] PropostaFiltroParams filtro) =>
+            Ok(await _service.Buscar(pagination, filtro));
 
         [HttpGet("{id_proposta:int}")]
         public async Task<IActionResult> GetById(int id_proposta)

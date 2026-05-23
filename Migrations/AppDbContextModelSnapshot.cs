@@ -270,11 +270,8 @@ namespace Veiculo_gestao.Migrations
             modelBuilder.Entity("Gestao_veiculos.Models.Vistoria", b =>
                 {
                     b.Property<int>("Id_vistoria")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("id_vistoria");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id_vistoria"));
 
                     b.Property<DateTime>("Data_solicitacao")
                         .HasColumnType("datetime(6)")

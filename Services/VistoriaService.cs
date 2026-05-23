@@ -16,10 +16,16 @@ namespace Gestao_veiculos.Services
             _logger  = logger;
         }
 
-        public async Task<PagedResultDto<ResponseVistoriaDto>> ListarTodos(PaginationParams pagination)
+        public async Task<PagedResultDto<ResponseVistoriaDto>> ListarTodos(PaginationParams pagination, int? userId = null, int? propostaId = null)
         {
-            var total = await _context.Vistorias.CountAsync();
-            var items = await _context.Vistorias
+            var query = _context.Vistorias.AsQueryable();
+            if (userId.HasValue)
+                query = query.Where(v => v.Id_usuario == userId.Value);
+            if (propostaId.HasValue)
+                query = query.Where(v => v.Id_proposta == propostaId.Value);
+
+            var total = await query.CountAsync();
+            var items = await query
                 .Skip((pagination.Page - 1) * pagination.PageSize)
                 .Take(pagination.PageSize)
                 .Select(v => ToResponse(v))
@@ -53,8 +59,13 @@ namespace Gestao_veiculos.Services
                 throw new KeyNotFoundException("Usuário informado não existe.");
             }
 
+            int newId;
+            do { newId = Random.Shared.Next(10_000, 100_000); }
+            while (await _context.Vistorias.AnyAsync(v => v.Id_vistoria == newId));
+
             var vistoria = new Vistoria
             {
+                Id_vistoria     = newId,
                 DataSolicitacao = dto.DataSolicitacao,
                 Status          = dto.Status!.Value,
                 Id_proposta     = dto.Id_proposta,
@@ -62,9 +73,14 @@ namespace Gestao_veiculos.Services
             };
 
             _context.Vistorias.Add(vistoria);
+
+            var proposta = await _context.Propostas.FindAsync(dto.Id_proposta);
+            if (proposta is not null)
+                proposta.Status = Enums.StatusProposta.EmAnalise;
+
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Vistoria criada: Id={Id}, Proposta={IdProposta}", vistoria.Id_vistoria, vistoria.Id_proposta);
+            _logger.LogInformation("Vistoria criada: Id={Id}, Proposta={IdProposta} → EmAnalise", vistoria.Id_vistoria, vistoria.Id_proposta);
             return ToResponse(vistoria);
         }
 
