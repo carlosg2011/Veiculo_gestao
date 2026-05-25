@@ -16,11 +16,11 @@ namespace Gestao_veiculos.Services
             _logger  = logger;
         }
 
-        public async Task<PagedResultDto<ResponseVistoriaDto>> ListarTodos(PaginationParams pagination, int? userId = null, int? propostaId = null)
+        public async Task<PagedResultDto<ResponseVistoriaDto>> ListarTodos(PaginationParams pagination, int? userId = null, int? propostaId = null, bool excludeCancelled = false)
         {
-            var query = _context.Vistorias
-                .Where(v => v.Status != Enums.StatusVistoria.Cancelada)
-                .AsQueryable();
+            var query = _context.Vistorias.AsQueryable();
+            if (excludeCancelled)
+                query = query.Where(v => v.Status != Enums.StatusVistoria.Cancelada);
             if (userId.HasValue)
                 query = query.Where(v => v.Id_usuario == userId.Value);
             if (propostaId.HasValue)

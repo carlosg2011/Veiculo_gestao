@@ -18,8 +18,8 @@ namespace Gestao_veiculos.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get([FromQuery] PaginationParams pagination, [FromQuery] int? userId, [FromQuery] int? propostaId) =>
-            Ok(await _service.ListarTodos(pagination, userId, propostaId));
+        public async Task<IActionResult> Get([FromQuery] PaginationParams pagination, [FromQuery] int? userId, [FromQuery] int? propostaId, [FromQuery] bool excludeCancelled = false) =>
+            Ok(await _service.ListarTodos(pagination, userId, propostaId, excludeCancelled));
 
         [HttpGet("{id_vistoria}")]
         public async Task<IActionResult> GetById(int id_vistoria)
