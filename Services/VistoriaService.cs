@@ -18,17 +18,35 @@ namespace Gestao_veiculos.Services
 
         public async Task<PagedResultDto<ResponseVistoriaDto>> ListarTodos(PaginationParams pagination, int? userId = null, int? propostaId = null)
         {
-            var query = _context.Vistorias.AsQueryable();
+            var query = _context.Vistorias
+                .Where(v => v.Status != Enums.StatusVistoria.Cancelada)
+                .AsQueryable();
             if (userId.HasValue)
                 query = query.Where(v => v.Id_usuario == userId.Value);
             if (propostaId.HasValue)
                 query = query.Where(v => v.Id_proposta == propostaId.Value);
 
             var total = await query.CountAsync();
-            var items = await query
+            var items = await (from v in query
+                               join p   in _context.Propostas      on v.Id_proposta      equals p.Id_proposta
+                               join vei in _context.Veiculos        on p.Id_veiculo       equals vei.Id_veiculo
+                               join pr  in _context.Proprietarios   on p.Id_proprietario  equals pr.Id_proprietario
+                               orderby v.Id_vistoria descending
+                               select new ResponseVistoriaDto
+                               {
+                                   Id_vistoria      = v.Id_vistoria,
+                                   DataSolicitacao  = v.DataSolicitacao,
+                                   DataInicio       = v.DataInicio,
+                                   DataConclusao    = v.DataConclusao,
+                                   Status           = v.Status,
+                                   Id_proposta      = v.Id_proposta,
+                                   SessaoProposta   = p.SessaoProposta,
+                                   Id_usuario       = v.Id_usuario,
+                                   NomeProprietario = pr.Nome,
+                                   Placa            = vei.Placa
+                               })
                 .Skip((pagination.Page - 1) * pagination.PageSize)
                 .Take(pagination.PageSize)
-                .Select(v => ToResponse(v))
                 .ToListAsync();
 
             return new PagedResultDto<ResponseVistoriaDto>
@@ -42,13 +60,30 @@ namespace Gestao_veiculos.Services
 
         public async Task<ResponseVistoriaDto?> BuscarPorId(int id)
         {
-            var v = await _context.Vistorias.FindAsync(id);
-            return v is null ? null : ToResponse(v);
+            return await (from v   in _context.Vistorias
+                          where v.Id_vistoria == id
+                          join p   in _context.Propostas     on v.Id_proposta     equals p.Id_proposta
+                          join vei in _context.Veiculos       on p.Id_veiculo      equals vei.Id_veiculo
+                          join pr  in _context.Proprietarios  on p.Id_proprietario equals pr.Id_proprietario
+                          select new ResponseVistoriaDto
+                          {
+                              Id_vistoria      = v.Id_vistoria,
+                              DataSolicitacao  = v.DataSolicitacao,
+                              DataInicio       = v.DataInicio,
+                              DataConclusao    = v.DataConclusao,
+                              Status           = v.Status,
+                              Id_proposta      = v.Id_proposta,
+                              SessaoProposta   = p.SessaoProposta,
+                              Id_usuario       = v.Id_usuario,
+                              NomeProprietario = pr.Nome,
+                              Placa            = vei.Placa
+                          }).FirstOrDefaultAsync();
         }
 
         public async Task<ResponseVistoriaDto> Criar(CreateVistoriaDto dto)
         {
-            if (!await _context.Propostas.AnyAsync(p => p.Id_proposta == dto.Id_proposta))
+            var proposta = await _context.Propostas.FindAsync(dto.Id_proposta);
+            if (proposta is null)
             {
                 _logger.LogWarning("Vistoria rejeitada — proposta não encontrada: Id={Id}", dto.Id_proposta);
                 throw new KeyNotFoundException("Proposta informada não existe.");
@@ -59,29 +94,25 @@ namespace Gestao_veiculos.Services
                 throw new KeyNotFoundException("Usuário informado não existe.");
             }
 
-            int newId;
-            do { newId = Random.Shared.Next(10_000, 100_000); }
-            while (await _context.Vistorias.AnyAsync(v => v.Id_vistoria == newId));
+            var maxId = await _context.Vistorias.MaxAsync(v => (int?)v.Id_vistoria) ?? 9_999;
+            int newId = Math.Max(maxId, 9_999) + 1;
 
             var vistoria = new Vistoria
             {
                 Id_vistoria     = newId,
                 DataSolicitacao = dto.DataSolicitacao,
+                DataInicio      = dto.DataSolicitacao,
                 Status          = dto.Status!.Value,
                 Id_proposta     = dto.Id_proposta,
                 Id_usuario      = dto.Id_usuario
             };
 
             _context.Vistorias.Add(vistoria);
-
-            var proposta = await _context.Propostas.FindAsync(dto.Id_proposta);
-            if (proposta is not null)
-                proposta.Status = Enums.StatusProposta.EmAnalise;
-
+            proposta.Status = Enums.StatusProposta.EmAnalise;
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("Vistoria criada: Id={Id}, Proposta={IdProposta} → EmAnalise", vistoria.Id_vistoria, vistoria.Id_proposta);
-            return ToResponse(vistoria);
+            return ToResponse(vistoria, proposta.SessaoProposta);
         }
 
         public async Task<ResponseVistoriaDto> Atualizar(int id, UpdateVistoriaDto dto)
@@ -94,13 +125,20 @@ namespace Gestao_veiculos.Services
             }
 
             vistoria.Status        = dto.Status!.Value;
-            vistoria.DataInicio    = dto.DataInicio;
+            vistoria.DataInicio    = dto.DataInicio ?? vistoria.DataInicio;
             vistoria.DataConclusao = dto.DataConclusao;
 
             await _context.SaveChangesAsync();
 
+            var proposta = await _context.Propostas.FindAsync(vistoria.Id_proposta);
+            if (proposta is not null && vistoria.Status == Enums.StatusVistoria.Concluida)
+            {
+                proposta.Status = Enums.StatusProposta.Aprovada;
+                await _context.SaveChangesAsync();
+            }
+
             _logger.LogInformation("Vistoria atualizada: Id={Id}, Status={Status}", id, vistoria.Status);
-            return ToResponse(vistoria);
+            return ToResponse(vistoria, proposta?.SessaoProposta ?? string.Empty);
         }
 
         public async Task Deletar(int id)
@@ -118,15 +156,18 @@ namespace Gestao_veiculos.Services
             _logger.LogInformation("Vistoria excluída: Id={Id}", id);
         }
 
-        private static ResponseVistoriaDto ToResponse(Vistoria v) => new()
+        private static ResponseVistoriaDto ToResponse(Vistoria v, string sessaoProposta, string nomeProprietario = "", string placa = "") => new()
         {
-            Id_vistoria     = v.Id_vistoria,
-            DataSolicitacao = v.DataSolicitacao,
-            DataInicio      = v.DataInicio,
-            DataConclusao   = v.DataConclusao,
-            Status          = v.Status,
-            Id_proposta     = v.Id_proposta,
-            Id_usuario      = v.Id_usuario
+            Id_vistoria      = v.Id_vistoria,
+            DataSolicitacao  = v.DataSolicitacao,
+            DataInicio       = v.DataInicio,
+            DataConclusao    = v.DataConclusao,
+            Status           = v.Status,
+            Id_proposta      = v.Id_proposta,
+            SessaoProposta   = sessaoProposta,
+            Id_usuario       = v.Id_usuario,
+            NomeProprietario = nomeProprietario,
+            Placa            = placa
         };
     }
 }
