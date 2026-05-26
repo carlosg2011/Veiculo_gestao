@@ -40,6 +40,12 @@ namespace Gestao_veiculos.Services
             return p is null ? null : ToResponse(p);
         }
 
+        public async Task<ResponseProprietarioDto?> BuscarPorCpf(string cpf)
+        {
+            var p = await _context.Proprietarios.FirstOrDefaultAsync(x => x.Cpf == cpf);
+            return p is null ? null : ToResponse(p);
+        }
+
         public async Task<ResponseProprietarioDto> Criar(CreateProprietarioDto dto)
         {
             if (await _context.Proprietarios.AnyAsync(p => p.Cpf == dto.Cpf))

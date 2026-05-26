@@ -6,6 +6,7 @@ namespace Gestao_veiculos.Services
     {
         Task<PagedResultDto<ResponseProprietarioDto>> ListarTodos(PaginationParams pagination);
         Task<ResponseProprietarioDto?> BuscarPorId(int id);
+        Task<ResponseProprietarioDto?> BuscarPorCpf(string cpf);
         Task<ResponseProprietarioDto> Criar(CreateProprietarioDto dto);
         Task<ResponseProprietarioDto> Atualizar(int id, CreateProprietarioDto dto);
         Task Deletar(int id);

@@ -30,6 +30,15 @@ namespace Gestao_veiculos.Controllers
                 : Ok(proprietario);
         }
 
+        [HttpGet("cpf/{cpf}")]
+        public async Task<IActionResult> GetByCpf(string cpf)
+        {
+            var proprietario = await _service.BuscarPorCpf(cpf);
+            return proprietario is null
+                ? Problem(statusCode: StatusCodes.Status404NotFound)
+                : Ok(proprietario);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Post(CreateProprietarioDto dto)
         {

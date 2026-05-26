@@ -1,5 +1,6 @@
 using Gestao_veiculos.Data;
 using Gestao_veiculos.DTOs;
+using Gestao_veiculos.Enums;
 using Gestao_veiculos.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -42,8 +43,14 @@ namespace Gestao_veiculos.Services
 
         public async Task<ResponseVeiculoDto> Criar(CreateVeiculoDto dto)
         {
-            if (await _context.Veiculos.AnyAsync(v => v.Placa == dto.Placa))
+            var veiculoExistente = await _context.Veiculos.FirstOrDefaultAsync(v => v.Placa == dto.Placa);
+            if (veiculoExistente is not null)
             {
+                if (veiculoExistente.Status == StatusVeiculo.Bloqueado)
+                {
+                    _logger.LogWarning("Tentativa de cadastro com placa bloqueada: {Placa}", dto.Placa);
+                    throw new InvalidOperationException("Veículo indisponível por inviabilidade técnica.");
+                }
                 _logger.LogWarning("Tentativa de cadastro com placa já existente: {Placa}", dto.Placa);
                 throw new InvalidOperationException("Placa já cadastrada.");
             }
