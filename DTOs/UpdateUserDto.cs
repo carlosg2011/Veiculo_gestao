@@ -12,7 +12,6 @@ namespace Gestao_veiculos.DTOs
         [EmailAddress(ErrorMessage = "Email inválido.")]
         public string Email { get; set; } = string.Empty;
 
-        [MinLength(8, ErrorMessage = "Senha deve ter no mínimo 8 caracteres.")]
         public string? Senha { get; set; }
 
         [Required(ErrorMessage = "Role é obrigatório.")]

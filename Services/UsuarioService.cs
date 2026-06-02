@@ -83,7 +83,11 @@ namespace Gestao_veiculos.Services
             usuario.Role  = dto.Role;
 
             if (!string.IsNullOrWhiteSpace(dto.Senha))
+            {
+                if (dto.Senha.Length < 8)
+                    throw new InvalidOperationException("Senha deve ter no mínimo 8 caracteres.");
                 usuario.Senha = BCrypt.Net.BCrypt.HashPassword(dto.Senha);
+            }
 
             await _context.SaveChangesAsync();
 
