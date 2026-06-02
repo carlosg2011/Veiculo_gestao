@@ -58,9 +58,8 @@ namespace Gestao_veiculos.Controllers
             var usuario = await _context.Usuarios
                 .FirstOrDefaultAsync(u => u.Email == dto.Email);
 
-            // Retorna Ok mesmo se o e-mail não existir para não revelar cadastros
             if (usuario is null)
-                return Ok();
+                return Problem(detail: "E-mail não encontrado.", statusCode: StatusCodes.Status404NotFound);
 
             // Invalida tokens anteriores não utilizados
             var tokensAntigos = await _context.PasswordResetTokens
