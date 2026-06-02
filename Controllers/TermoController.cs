@@ -30,6 +30,15 @@ namespace Gestao_veiculos.Controllers
                 : Ok(termo);
         }
 
+        [HttpGet("proposta/{idProposta}")]
+        public async Task<IActionResult> GetByProposta(int idProposta)
+        {
+            var termo = await _service.BuscarPorProposta(idProposta);
+            return termo is null
+                ? Problem(statusCode: StatusCodes.Status404NotFound)
+                : Ok(termo);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Post(CreateTermoDto dto)
         {

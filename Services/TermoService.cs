@@ -1,5 +1,6 @@
 using Gestao_veiculos.Data;
 using Gestao_veiculos.DTOs;
+using Gestao_veiculos.Enums;
 using Gestao_veiculos.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -50,6 +51,15 @@ namespace Gestao_veiculos.Services
         public async Task<ResponseTermoDto?> BuscarPorId(int id)
         {
             var t = await _context.Termos.FindAsync(id);
+            return t is null ? null : ToResponse(t);
+        }
+
+        public async Task<ResponseTermoDto?> BuscarPorProposta(int idProposta)
+        {
+            var t = await _context.Termos
+                .Where(x => x.Id_proposta == idProposta && x.Status != StatusTermo.Cancelado && x.Status != StatusTermo.Expirado)
+                .OrderByDescending(x => x.DataEnvio)
+                .FirstOrDefaultAsync();
             return t is null ? null : ToResponse(t);
         }
 
