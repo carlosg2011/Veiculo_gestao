@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Gestao_veiculos.Validators;
 
 namespace Gestao_veiculos.DTOs
 {
@@ -9,7 +10,8 @@ namespace Gestao_veiculos.DTOs
         public string Nome { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "CPF é obrigatório.")]
-        [MaxLength(14, ErrorMessage = "CPF pode ter no máximo 14 caracteres.")]
+        [MaxLength(18, ErrorMessage = "CPF/CNPJ inválido.")]
+        [CpfCnpj]
         public string Cpf { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Telefone é obrigatório.")]
