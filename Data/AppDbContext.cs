@@ -16,6 +16,7 @@ namespace Gestao_veiculos.Data
         public DbSet<Proposta> Propostas { get; set; }
         public DbSet<Vistoria> Vistorias { get; set; }
         public DbSet<Termo> Termos { get; set; }
+        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -281,6 +282,22 @@ namespace Gestao_veiculos.Data
                     .WithMany()
                     .HasForeignKey(t => t.Id_proposta)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<PasswordResetToken>(entity =>
+            {
+                entity.ToTable("password_reset_token");
+                entity.HasKey(t => t.Id);
+                entity.Property(t => t.Id).HasColumnName("id");
+                entity.Property(t => t.Id_usuario).HasColumnName("id_usuario").IsRequired();
+                entity.Property(t => t.Token).HasColumnName("token").HasMaxLength(128).IsRequired();
+                entity.HasIndex(t => t.Token).IsUnique();
+                entity.Property(t => t.ExpiresAt).HasColumnName("expires_at").IsRequired();
+                entity.Property(t => t.Used).HasColumnName("used").HasDefaultValue(false);
+                entity.HasOne<Usuario>()
+                    .WithMany()
+                    .HasForeignKey(t => t.Id_usuario)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             base.OnModelCreating(modelBuilder);

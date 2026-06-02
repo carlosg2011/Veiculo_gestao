@@ -57,6 +57,8 @@ builder.Services.AddScoped<IVeiculoService, VeiculoService>();
 builder.Services.AddScoped<IPropostaService, PropostaService>();
 builder.Services.AddScoped<IVistoriaService, VistoriaService>();
 builder.Services.AddScoped<ITermoService, TermoService>();
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
