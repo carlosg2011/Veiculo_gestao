@@ -68,19 +68,32 @@ namespace Gestao_veiculos.Controllers
                 .ToListAsync();
             tokensAntigos.ForEach(t => t.Used = true);
 
-            var token = RandomNumberGenerator.GetHexString(64);
+            // Gera código numérico de 6 dígitos
+            var bytes = new byte[4];
+            RandomNumberGenerator.Fill(bytes);
+            var code = (BitConverter.ToUInt32(bytes) % 900000 + 100000).ToString();
+
             _context.PasswordResetTokens.Add(new PasswordResetToken
             {
                 Id_usuario = usuario.Id_usuario,
-                Token = token,
-                ExpiresAt = DateTime.UtcNow.AddHours(1)
+                Token = code,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(15)
             });
             await _context.SaveChangesAsync();
 
-            var frontendUrl = _configuration["Frontend:BaseUrl"]?.TrimEnd('/') ?? "http://localhost:5173";
-            var resetLink = $"{frontendUrl}/reset-password?token={token}";
+            await _emailService.SendPasswordResetAsync(usuario.Email, usuario.Nome, code);
 
-            await _emailService.SendPasswordResetAsync(usuario.Email, usuario.Nome, resetLink);
+            return Ok();
+        }
+
+        [HttpPost("validate-token")]
+        public async Task<IActionResult> ValidateToken(ValidateTokenDto dto)
+        {
+            var record = await _context.PasswordResetTokens
+                .FirstOrDefaultAsync(t => t.Token == dto.Token && !t.Used && t.ExpiresAt > DateTime.UtcNow);
+
+            if (record is null)
+                return Problem(detail: "Código inválido ou expirado.", statusCode: StatusCodes.Status400BadRequest);
 
             return Ok();
         }
@@ -92,7 +105,7 @@ namespace Gestao_veiculos.Controllers
                 .FirstOrDefaultAsync(t => t.Token == dto.Token && !t.Used && t.ExpiresAt > DateTime.UtcNow);
 
             if (resetToken is null)
-                return Problem(detail: "Token inválido ou expirado.", statusCode: StatusCodes.Status400BadRequest);
+                return Problem(detail: "Código inválido ou expirado.", statusCode: StatusCodes.Status400BadRequest);
 
             var usuario = await _context.Usuarios.FindAsync(resetToken.Id_usuario);
             if (usuario is null)
