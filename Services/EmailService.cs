@@ -1,4 +1,3 @@
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
@@ -8,26 +7,28 @@ namespace Gestao_veiculos.Services
     {
         private readonly IHttpClientFactory _factory;
         private readonly string _apiKey;
-        private readonly string _from;
+        private readonly string _fromEmail;
+        private readonly string _fromName;
 
         public EmailService(IHttpClientFactory factory, IConfiguration config)
         {
             _factory = factory;
-            _apiKey = config["Resend:ApiKey"] ?? throw new InvalidOperationException("Resend:ApiKey não configurada.");
-            _from = config["Resend:From"] ?? "Vehicle Guard <onboarding@resend.dev>";
+            _apiKey = config["Brevo:ApiKey"] ?? throw new InvalidOperationException("Brevo:ApiKey não configurada.");
+            _fromEmail = config["Brevo:FromEmail"] ?? throw new InvalidOperationException("Brevo:FromEmail não configurada.");
+            _fromName = config["Brevo:FromName"] ?? "Vehicle Guard";
         }
 
         public async Task SendPasswordResetAsync(string toEmail, string toName, string code)
         {
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
+            client.DefaultRequestHeaders.Add("api-key", _apiKey);
 
             var payload = new
             {
-                from = _from,
-                to = new[] { toEmail },
+                sender = new { name = _fromName, email = _fromEmail },
+                to = new[] { new { email = toEmail, name = toName } },
                 subject = "Código de verificação — Vehicle Guard",
-                html = BuildHtml(toName, code)
+                htmlContent = BuildHtml(toName, code)
             };
 
             var content = new StringContent(
@@ -35,7 +36,7 @@ namespace Gestao_veiculos.Services
                 Encoding.UTF8,
                 "application/json");
 
-            var response = await client.PostAsync("https://api.resend.com/emails", content);
+            var response = await client.PostAsync("https://api.brevo.com/v3/smtp/email", content);
             response.EnsureSuccessStatusCode();
         }
 
