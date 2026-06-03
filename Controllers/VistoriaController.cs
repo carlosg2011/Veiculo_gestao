@@ -58,6 +58,20 @@ namespace Gestao_veiculos.Controllers
             }
         }
 
+        [HttpPut("{id_vistoria}/fotos")]
+        public async Task<IActionResult> UpsertFoto(int id_vistoria, UpsertVistoriaFotoDto dto)
+        {
+            try
+            {
+                var foto = await _service.UpsertFoto(id_vistoria, dto);
+                return Ok(foto);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Problem(detail: ex.Message, statusCode: StatusCodes.Status404NotFound);
+            }
+        }
+
         [HttpDelete("{id_vistoria}")]
         public async Task<IActionResult> Delete(int id_vistoria)
         {

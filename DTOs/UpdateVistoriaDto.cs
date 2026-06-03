@@ -10,5 +10,6 @@ namespace Gestao_veiculos.DTOs
 
         public DateTime? DataInicio { get; set; }
         public DateTime? DataConclusao { get; set; }
+        public string? Observacoes { get; set; }
     }
 }

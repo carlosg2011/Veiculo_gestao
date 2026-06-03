@@ -43,11 +43,21 @@ namespace Gestao_veiculos.Services
                                    SessaoProposta   = p.SessaoProposta,
                                    Id_usuario       = v.Id_usuario,
                                    NomeProprietario = pr.Nome,
-                                   Placa            = vei.Placa
+                                   Placa            = vei.Placa,
+                                   Observacoes      = v.Observacoes
                                })
                 .Skip((pagination.Page - 1) * pagination.PageSize)
                 .Take(pagination.PageSize)
                 .ToListAsync();
+
+            var ids = items.Select(i => i.Id_vistoria).ToList();
+            var fotos = await _context.VistoriaFotos
+                .Where(f => ids.Contains(f.Id_vistoria))
+                .ToListAsync();
+
+            foreach (var item in items)
+                item.Fotos = fotos.Where(f => f.Id_vistoria == item.Id_vistoria)
+                    .Select(ToFotoDto).ToList();
 
             return new PagedResultDto<ResponseVistoriaDto>
             {
@@ -60,24 +70,34 @@ namespace Gestao_veiculos.Services
 
         public async Task<ResponseVistoriaDto?> BuscarPorId(int id)
         {
-            return await (from v   in _context.Vistorias
-                          where v.Id_vistoria == id
-                          join p   in _context.Propostas     on v.Id_proposta     equals p.Id_proposta
-                          join vei in _context.Veiculos       on p.Id_veiculo      equals vei.Id_veiculo
-                          join pr  in _context.Proprietarios  on p.Id_proprietario equals pr.Id_proprietario
-                          select new ResponseVistoriaDto
-                          {
-                              Id_vistoria      = v.Id_vistoria,
-                              DataSolicitacao  = v.DataSolicitacao,
-                              DataInicio       = v.DataInicio,
-                              DataConclusao    = v.DataConclusao,
-                              Status           = v.Status,
-                              Id_proposta      = v.Id_proposta,
-                              SessaoProposta   = p.SessaoProposta,
-                              Id_usuario       = v.Id_usuario,
-                              NomeProprietario = pr.Nome,
-                              Placa            = vei.Placa
-                          }).FirstOrDefaultAsync();
+            var dto = await (from v   in _context.Vistorias
+                             where v.Id_vistoria == id
+                             join p   in _context.Propostas     on v.Id_proposta     equals p.Id_proposta
+                             join vei in _context.Veiculos       on p.Id_veiculo      equals vei.Id_veiculo
+                             join pr  in _context.Proprietarios  on p.Id_proprietario equals pr.Id_proprietario
+                             select new ResponseVistoriaDto
+                             {
+                                 Id_vistoria      = v.Id_vistoria,
+                                 DataSolicitacao  = v.DataSolicitacao,
+                                 DataInicio       = v.DataInicio,
+                                 DataConclusao    = v.DataConclusao,
+                                 Status           = v.Status,
+                                 Id_proposta      = v.Id_proposta,
+                                 SessaoProposta   = p.SessaoProposta,
+                                 Id_usuario       = v.Id_usuario,
+                                 NomeProprietario = pr.Nome,
+                                 Placa            = vei.Placa,
+                                 Observacoes      = v.Observacoes
+                             }).FirstOrDefaultAsync();
+
+            if (dto is null) return null;
+
+            dto.Fotos = await _context.VistoriaFotos
+                .Where(f => f.Id_vistoria == id)
+                .Select(f => ToFotoDto(f))
+                .ToListAsync();
+
+            return dto;
         }
 
         public async Task<ResponseVistoriaDto> Criar(CreateVistoriaDto dto)
@@ -127,18 +147,50 @@ namespace Gestao_veiculos.Services
             vistoria.Status        = dto.Status!.Value;
             vistoria.DataInicio    = dto.DataInicio ?? vistoria.DataInicio;
             vistoria.DataConclusao = dto.DataConclusao;
+            if (dto.Observacoes is not null)
+                vistoria.Observacoes = dto.Observacoes;
 
             await _context.SaveChangesAsync();
 
             var proposta = await _context.Propostas.FindAsync(vistoria.Id_proposta);
-            if (proposta is not null && vistoria.Status == Enums.StatusVistoria.Concluida)
+            if (proposta is not null)
             {
-                proposta.Status = Enums.StatusProposta.Aprovada;
+                if (vistoria.Status == Enums.StatusVistoria.Aprovada)
+                    proposta.Status = Enums.StatusProposta.Aprovada;
+                else if (vistoria.Status == Enums.StatusVistoria.Recusada)
+                    proposta.Status = Enums.StatusProposta.Recusada;
+                else if (vistoria.Status == Enums.StatusVistoria.Concluida)
+                    proposta.Status = Enums.StatusProposta.Aprovada;
+
                 await _context.SaveChangesAsync();
             }
 
             _logger.LogInformation("Vistoria atualizada: Id={Id}, Status={Status}", id, vistoria.Status);
             return ToResponse(vistoria, proposta?.SessaoProposta ?? string.Empty);
+        }
+
+        public async Task<VistoriaFotoDto> UpsertFoto(int id, UpsertVistoriaFotoDto dto)
+        {
+            if (!await _context.Vistorias.AnyAsync(v => v.Id_vistoria == id))
+                throw new KeyNotFoundException("Vistoria não encontrada.");
+
+            var foto = await _context.VistoriaFotos
+                .FirstOrDefaultAsync(f => f.Id_vistoria == id && f.Slot == dto.Slot);
+
+            if (foto is null)
+            {
+                foto = new VistoriaFoto { Id_vistoria = id, Slot = dto.Slot, Url = dto.Url, Verdict = dto.Verdict };
+                _context.VistoriaFotos.Add(foto);
+            }
+            else
+            {
+                foto.Url     = dto.Url;
+                foto.Verdict = dto.Verdict;
+            }
+
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Foto upserted: Vistoria={Id}, Slot={Slot}", id, dto.Slot);
+            return ToFotoDto(foto);
         }
 
         public async Task Deletar(int id)
@@ -156,6 +208,14 @@ namespace Gestao_veiculos.Services
             _logger.LogInformation("Vistoria excluída: Id={Id}", id);
         }
 
+        private static VistoriaFotoDto ToFotoDto(VistoriaFoto f) => new()
+        {
+            Id_foto = f.Id_foto,
+            Slot    = f.Slot,
+            Url     = f.Url,
+            Verdict = f.Verdict
+        };
+
         private static ResponseVistoriaDto ToResponse(Vistoria v, string sessaoProposta, string nomeProprietario = "", string placa = "") => new()
         {
             Id_vistoria      = v.Id_vistoria,
@@ -167,7 +227,8 @@ namespace Gestao_veiculos.Services
             SessaoProposta   = sessaoProposta,
             Id_usuario       = v.Id_usuario,
             NomeProprietario = nomeProprietario,
-            Placa            = placa
+            Placa            = placa,
+            Observacoes      = v.Observacoes
         };
     }
 }

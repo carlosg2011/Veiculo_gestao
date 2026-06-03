@@ -8,6 +8,7 @@ namespace Gestao_veiculos.Services
         Task<ResponseVistoriaDto?> BuscarPorId(int id);
         Task<ResponseVistoriaDto> Criar(CreateVistoriaDto dto);
         Task<ResponseVistoriaDto> Atualizar(int id, UpdateVistoriaDto dto);
+        Task<VistoriaFotoDto> UpsertFoto(int id, UpsertVistoriaFotoDto dto);
         Task Deletar(int id);
     }
 }
