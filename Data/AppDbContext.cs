@@ -16,6 +16,7 @@ namespace Gestao_veiculos.Data
         public DbSet<Proposta> Propostas { get; set; }
         public DbSet<Vistoria> Vistorias { get; set; }
         public DbSet<Termo> Termos { get; set; }
+        public DbSet<VistoriaFoto> VistoriaFotos { get; set; }
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -236,6 +237,10 @@ namespace Gestao_veiculos.Data
                     .HasColumnName("id_usuario_responsavel")
                     .IsRequired();
 
+                entity.Property(v => v.Observacoes)
+                    .HasColumnName("observacoes")
+                    .HasMaxLength(1000);
+
                 entity.HasOne<Proposta>()
                     .WithMany()
                     .HasForeignKey(v => v.Id_proposta)
@@ -245,6 +250,42 @@ namespace Gestao_veiculos.Data
                     .WithMany()
                     .HasForeignKey(v => v.Id_usuario)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<VistoriaFoto>(entity =>
+            {
+                entity.ToTable("vistoria_foto");
+
+                entity.HasKey(f => f.Id_foto);
+
+                entity.Property(f => f.Id_foto)
+                    .HasColumnName("id_foto");
+
+                entity.Property(f => f.Id_vistoria)
+                    .HasColumnName("id_vistoria")
+                    .IsRequired();
+
+                entity.Property(f => f.Slot)
+                    .HasColumnName("slot")
+                    .HasMaxLength(50)
+                    .IsRequired();
+
+                entity.Property(f => f.Url)
+                    .HasColumnName("url")
+                    .HasMaxLength(500)
+                    .IsRequired();
+
+                entity.Property(f => f.Verdict)
+                    .HasColumnName("verdict")
+                    .HasMaxLength(20);
+
+                entity.HasIndex(f => new { f.Id_vistoria, f.Slot })
+                    .IsUnique();
+
+                entity.HasOne<Vistoria>()
+                    .WithMany()
+                    .HasForeignKey(f => f.Id_vistoria)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<Termo>(entity =>

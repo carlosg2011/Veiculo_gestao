@@ -11,5 +11,6 @@ namespace Gestao_veiculos.Models
         public StatusVistoria Status { get; set; }
         public int Id_proposta { get; set; }
         public int Id_usuario { get; set; }
+        public string? Observacoes { get; set; }
     }
 }

@@ -14,5 +14,7 @@ namespace Gestao_veiculos.DTOs
         public int Id_usuario { get; set; }
         public string NomeProprietario { get; set; } = string.Empty;
         public string Placa { get; set; } = string.Empty;
+        public string? Observacoes { get; set; }
+        public List<VistoriaFotoDto> Fotos { get; set; } = new();
     }
 }
