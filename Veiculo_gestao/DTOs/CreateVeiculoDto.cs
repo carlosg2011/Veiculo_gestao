@@ -6,7 +6,8 @@ namespace Gestao_veiculos.DTOs
     public class CreateVeiculoDto
     {
         [Required(ErrorMessage = "Placa é obrigatória.")]
-        [MaxLength(10, ErrorMessage = "Placa pode ter no máximo 10 caracteres.")]
+        [RegularExpression(@"^[A-Z]{3}[0-9]{4}$|^[A-Z]{3}[0-9][A-Z][0-9]{2}$",
+            ErrorMessage = "Placa inválida. Use o formato ABC1234 (antigo) ou ABC1D23 (Mercosul).")]
         public string Placa { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Marca é obrigatória.")]
