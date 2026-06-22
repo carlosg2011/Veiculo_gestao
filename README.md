@@ -319,4 +319,4 @@ O workflow `.github/workflows/master_gestaodeveiculosapi.yml` realiza build e de
 
 - Andrey Yan
 - Felipe Biver
-- Carlos Gabriel
+- Carlos Gabriel - Responsável pela arquitetura da API, implementação dos serviços de negócio, autenticação JWT, integração com Cloudinary e configuração do deploy com Docker no Render.
